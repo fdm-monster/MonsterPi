@@ -1,0 +1,85 @@
+---
+
+name: Build Image
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - '**'
+      - '!release/*'
+    paths:
+      - 'src/*'
+      - '.github/workflows/build.yaml'
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install Dependencies
+      run: |
+        sudo apt update
+        sudo apt install coreutils p7zip-full qemu-user-static
+
+    - name: Checkout CustomPiOS
+      uses: actions/checkout@v3.5.2
+      with:
+        repository: 'guysoft/CustomPiOS'
+        path: CustomPiOS
+
+    - name: Checkout Project Repository
+      uses: actions/checkout@v3.5.2
+      with:
+        path: repository
+        submodules: true
+
+    - name: Download Raspbian Image
+      run: |
+        cd repository/src/image
+        wget -c --trust-server-names 'https://cdimage.ubuntu.com/releases/20.04/release/ubuntu-20.04.5-preinstalled-server-arm64+raspi.img.xz'
+
+    - name: Update CustomPiOS Paths
+      run: |
+        cd repository/src
+        ../../CustomPiOS/src/update-custompios-paths
+
+    - name: Set nightly image version
+      if: github.event_name == 'schedule'
+      run: |
+        source repository/src/config
+        NOW=$(date +"%Y-%m-%d")
+        echo "DIST_VERSION=$DIST_VERSION-$NOW-nightly" > repository/src/config.local
+
+    - name: Build Image
+      run: |
+        sudo modprobe loop
+        cd repository/src
+        sudo bash -x ./build_dist
+
+    - name: Copy output
+      id: copy
+      run: |
+        source repository/src/config
+        NOW=$(date +"%Y-%m-%d")
+        IMAGE=monsterpi-$DIST_VERSION-$NOW-nightly
+
+        cp repository/src/workspace/*.img $IMAGE.img
+
+        echo "::set-output name=image::$IMAGE"
+
+    - name: Zip Image
+      if: github.event_name == 'schedule'
+      run: |
+        zip ${{ steps.copy.outputs.image }}.zip ${{ steps.copy.outputs.image }}.img
+
+    # - name: Upload to server
+    #   if: github.event_name == 'schedule'
+    #   uses: garygrossgarten/github-action-scp@v0.8.0
+    #   with:
+    #     local: '${{ steps.copy.outputs.image }}.zip'
+    #     remote: '/web/farmpi.octofarm.net/public_html/nightly/${{ steps.copy.outputs.image }}.zip'
+    #     host: '${{ secrets.SSH_REMOTE_HOST }}'
+    #     username: '${{ secrets.SSH_USERNAME }}'
+    #     privateKey: ${{ secrets.SSH_PRIVATE_KEY }}
