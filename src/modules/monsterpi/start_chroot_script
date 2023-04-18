@@ -32,7 +32,7 @@ fi
 
 # echo " - Reinstall iputils-ping"
 # apt-get install --reinstall iputils-ping
-sudo apt-get install gnupg
+apt install gnupg
 
 # MongoDB
 curl -fsSL https://pgp.mongodb.com/server-$MONSTERPI_MONGODB_VERSION.asc | \
@@ -42,14 +42,18 @@ curl -fsSL https://pgp.mongodb.com/server-$MONSTERPI_MONGODB_VERSION.asc | \
 # TODO focal, jammy are dependent on (LTS) OS, but only MongoDB 6.0 is available for 22.04 LTS... so there's no real point variating the FARMPI_MONGODB_VERSION
 echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-$MONSTERPI_MONGODB_VERSION.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/$MONSTERPI_MONGODB_VERSION multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-$MONSTERPI_MONGODB_VERSION.list
 
-apt-get update
-apt-get install -y mongodb-org
+apt update
+apt install -y mongodb-org
 systemctl enable mongod
 systemctl start mongod
 
 curl -sL https://deb.nodesource.com/setup_$MONSTERPI_NODEJS_VERSION | bash -
 apt update
-apt -y --force-yes install nodejs
+apt install -y nodejs gcc g++ make
+npm install -g npm
+
+# curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor | sudo tee /usr/share/keyrings/yarnkey.g
+# sudo apt update && sudo apt install -y yarn
 
 # Yarn install
 npm install -g yarn
