@@ -72,7 +72,7 @@ pushd /home/"${BASE_USER}"
     if [ "$MONSTERPI_INCLUDE_HAPROXY" == "yes" ]
     then
         echo "--- Installing haproxy"
-        apt-get -y --force-yes install ssl-cert haproxy
+        apt -y install ssl-cert haproxy
         rm /etc/ssl/private/ssl-cert-snakeoil.key /etc/ssl/certs/ssl-cert-snakeoil.pem
     fi
 popd
