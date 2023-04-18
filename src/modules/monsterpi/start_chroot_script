@@ -47,5 +47,31 @@ apt-get install -y mongodb-org
 systemctl enable mongod
 systemctl start mongod
 
+curl -sL https://deb.nodesource.com/setup_$MONSTERPI_NODEJS_VERSION | bash -
+apt update
+apt -y --force-yes install nodejs
+
+# Yarn install
+npm install -g yarn
+npm install -g node-linux
+
+pushd /home/"${BASE_USER}"
+    # Install FDM Monster
+    sudo -u "${BASE_USER}" git clone https://github.com/fdm-monster/fdm-monster.git /home/"${BASE_USER}"/fdm-monster
+
+    cd /home/"${BASE_USER}"/fdm-monster/server
+    yarn install --production --pure-lockfile
+    cd ../fdm-monster-daemon
+    yarn run install    
+
+    # setup haproxy for http and https
+    if [ "$MONSTERPI_INCLUDE_HAPROXY" == "yes" ]
+    then
+        echo "--- Installing haproxy"
+        apt-get -y --force-yes install ssl-cert haproxy
+        rm /etc/ssl/private/ssl-cert-snakeoil.key /etc/ssl/certs/ssl-cert-snakeoil.pem
+    fi
+popd
+
 # Unpack root at the end, so files are modified before
 unpack /filesystem/root /
