@@ -61,7 +61,7 @@ pushd /home/"${BASE_USER}"
 
     cd /home/"${BASE_USER}"/fdm-monster/server
     yarn install --production --pure-lockfile
-    cd ../fdm-monster-daemon
+    cd /home/"${BASE_USER}"/fdm-monster-daemon
     yarn run install    
 
     # setup haproxy for http and https
