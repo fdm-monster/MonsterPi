@@ -63,7 +63,6 @@ npm install -g npm
 
 # Yarn install
 npm install -g yarn
-npm install -g node-linux
 
 pushd /home/"${BASE_USER}"
     # Install FDM Monster
@@ -73,6 +72,7 @@ pushd /home/"${BASE_USER}"
     yarn install --production --frozen-lockfile --network-timeout 1000000000  
 
     cd /home/"${BASE_USER}"/fdm-monster-daemon
+    npm i node-linux
     npm i
 
     # setup haproxy for http and https
