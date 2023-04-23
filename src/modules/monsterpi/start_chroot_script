@@ -50,8 +50,9 @@ apt install -y gnupg
 
 wget -qO - https://www.mongodb.org/static/pgp/server-$MONSTERPI_MONGODB_VERSION.asc | sudo apt-key add -
 echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/`cat /etc/os-release | grep "^ID=" | cut -d "=" -f2` `cat /etc/os-release | grep "^VERSION_CODENAME=" | cut -d "=" -f2`/mongodb-org/$MONSTERPI_MONGODB_VERSION multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-$MONSTERPI_MONGODB_VERSION.list
-apt-get update
-apt-get install -y --force-yes mongodb-org
+apt update
+# apt install -y --force-yes mongodb-org
+sudo apt install -y mongodb-org=4.4.15 mongodb-org-server=4.4.15 mongodb-org-shell=4.4.15 mongodb-org-mongos=4.4.15 mongodb-org-tools=4.4.15
 systemctl enable mongod
 systemctl start mongod
 
@@ -74,14 +75,15 @@ pushd /home/"${BASE_USER}"
     cd /home/"${BASE_USER}"/fdm-monster-daemon
     npm i node-linux
     npm i
+    systemctl enable fdmmonster
 
     # setup haproxy for http and https
-    # if [ "$MONSTERPI_INCLUDE_HAPROXY" == "yes" ]
-    # then
-    #     echo "--- Installing haproxy"
-    #     apt -y install ssl-cert haproxy
-    #     rm /etc/ssl/private/ssl-cert-snakeoil.key /etc/ssl/certs/ssl-cert-snakeoil.pem
-    # fi
+    if [ "$MONSTERPI_INCLUDE_HAPROXY" == "yes" ]
+    then
+        echo "--- Installing haproxy"
+        apt -y install ssl-cert haproxy
+        rm /etc/ssl/private/ssl-cert-snakeoil.key /etc/ssl/certs/ssl-cert-snakeoil.pem
+    fi
 popd
 
 # Unpack root at the end, so files are modified before
