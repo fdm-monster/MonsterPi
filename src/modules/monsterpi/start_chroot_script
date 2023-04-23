@@ -70,7 +70,7 @@ pushd /home/"${BASE_USER}"
     sudo -u "${BASE_USER}" git clone https://github.com/fdm-monster/fdm-monster.git /home/"${BASE_USER}"/fdm-monster
 
     cd /home/"${BASE_USER}"/fdm-monster/server
-    yarn run install --production --frozen-lockfile --network-timeout 1000000000  
+    yarn install --production --frozen-lockfile --network-timeout 1000000000  
 
     cd /home/"${BASE_USER}"/fdm-monster-daemon
     npm i
