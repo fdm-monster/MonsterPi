@@ -48,8 +48,8 @@ apt install -y gnupg
 # systemctl enable mongod
 # systemctl start mongod
 
-wget -qO - https://www.mongodb.org/static/pgp/server-$MONSTERPI_NODEJS_VERSION.asc | sudo apt-key add -
-echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/`cat /etc/os-release | grep "^ID=" | cut -d "=" -f2` `cat /etc/os-release | grep "^VERSION_CODENAME=" | cut -d "=" -f2`/mongodb-org/$MONSTERPI_NODEJS_VERSION multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-$MONSTERPI_NODEJS_VERSION.list
+wget -qO - https://www.mongodb.org/static/pgp/server-$MONSTERPI_MONGODB_VERSION.asc | sudo apt-key add -
+echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/`cat /etc/os-release | grep "^ID=" | cut -d "=" -f2` `cat /etc/os-release | grep "^VERSION_CODENAME=" | cut -d "=" -f2`/mongodb-org/$MONSTERPI_MONGODB_VERSION multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-$MONSTERPI_MONGODB_VERSION.list
 apt-get update
 apt-get install -y --force-yes mongodb-org
 systemctl enable mongod
