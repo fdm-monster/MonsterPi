@@ -41,15 +41,15 @@ apt install -y gnupg
 # curl -fsSL https://pgp.mongodb.com/server-$MONSTERPI_MONGODB_VERSION.asc | \
 #    sudo gpg -o /usr/share/keyrings/mongodb-server-$MONSTERPI_MONGODB_VERSION.gpg \
 #    --dearmor
-# # TODO focal, jammy are dependent on (LTS) OS, but only MongoDB 6.0 is available for 22.04 LTS... so there's no real point variating the FARMPI_MONGODB_VERSION
+# # TODO focal, jammy are dependent on (LTS) OS, but only MongoDB 6.0 is available for 22.04 LTS... so there's no real point variating the MONSTERPI_NODEJS_VERSION
 # echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-$MONSTERPI_MONGODB_VERSION.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/$MONSTERPI_MONGODB_VERSION multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-$MONSTERPI_MONGODB_VERSION.list
 # apt update
 # apt install -y mongodb-org
 # systemctl enable mongod
 # systemctl start mongod
 
-wget -qO - https://www.mongodb.org/static/pgp/server-$FARMPI_MONGODB_VERSION.asc | sudo apt-key add -
-echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/`cat /etc/os-release | grep "^ID=" | cut -d "=" -f2` `cat /etc/os-release | grep "^VERSION_CODENAME=" | cut -d "=" -f2`/mongodb-org/$FARMPI_MONGODB_VERSION multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-$FARMPI_MONGODB_VERSION.list
+wget -qO - https://www.mongodb.org/static/pgp/server-$MONSTERPI_NODEJS_VERSION.asc | sudo apt-key add -
+echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/`cat /etc/os-release | grep "^ID=" | cut -d "=" -f2` `cat /etc/os-release | grep "^VERSION_CODENAME=" | cut -d "=" -f2`/mongodb-org/$MONSTERPI_NODEJS_VERSION multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-$MONSTERPI_NODEJS_VERSION.list
 apt-get update
 apt-get install -y --force-yes mongodb-org
 systemctl enable mongod
