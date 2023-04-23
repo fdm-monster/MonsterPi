@@ -10,7 +10,7 @@ export BASE_USER_PASSWORD=raspberry
 
 # rpi-imager json generator settings
 export RPI_IMAGER_NAME="${DIST_NAME}"
-export RPI_IMAGER_DESCRIPTION="A raspberrypi distro running FDM Monster built with CustomPiOS"
+export RPI_IMAGER_DESCRIPTION="FDM Monster RaspberryPi distro built with CustomPiOS"
 export RPI_IMAGER_WEBSITE="https://github.com/fdm-monster/monster-pi"
 export RPI_IMAGER_ICON="https://github.com/fdm-monster/fdm-monster/blob/ba18cb7049a137939f9d2845d4d32507c9dbba08/docs/images/logo-copyright.png"
 

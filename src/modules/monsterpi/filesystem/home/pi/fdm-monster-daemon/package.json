@@ -5,7 +5,8 @@
     "main": "./install-fdm-monster.js",
     "license": "MIT",
     "scripts": {
-      "install": "node ./install-fdm-monster.js"
+      "install": "node ./install-fdm-monster.js",
+      "uninstall": "node ./uninstall-fdm-monster.js"
     },
     "dependencies": {}
   }

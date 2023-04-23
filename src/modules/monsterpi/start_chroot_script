@@ -24,6 +24,7 @@ remove_extra=$(remove_if_installed scratch squeak-plugins-scratch squeak-vm wolf
 echo "removing:" $remove_extra
 apt-get remove -y --purge  $remove_extra
 apt-get autoremove -y
+
 if [ "${BASE_DISTRO}" == "ubuntu" ]; then
     apt-get -y install jq git screen libffi-dev libssl-dev libatlas3-base libraspberrypi-bin rpi.gpio-common ca-certificates
 else
@@ -32,14 +33,16 @@ fi
 
 # echo " - Reinstall iputils-ping"
 # apt-get install --reinstall iputils-ping
-apt install gnupg
 
-# MongoDB
+# GPG
+apt install -y gnupg
+
+# # MongoDB
 curl -fsSL https://pgp.mongodb.com/server-$MONSTERPI_MONGODB_VERSION.asc | \
    sudo gpg -o /usr/share/keyrings/mongodb-server-$MONSTERPI_MONGODB_VERSION.gpg \
    --dearmor
 
-# TODO focal, jammy are dependent on (LTS) OS, but only MongoDB 6.0 is available for 22.04 LTS... so there's no real point variating the FARMPI_MONGODB_VERSION
+# # TODO focal, jammy are dependent on (LTS) OS, but only MongoDB 6.0 is available for 22.04 LTS... so there's no real point variating the FARMPI_MONGODB_VERSION
 echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-$MONSTERPI_MONGODB_VERSION.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/$MONSTERPI_MONGODB_VERSION multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-$MONSTERPI_MONGODB_VERSION.list
 
 apt update
@@ -47,13 +50,11 @@ apt install -y mongodb-org
 systemctl enable mongod
 systemctl start mongod
 
+# curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
 curl -sL https://deb.nodesource.com/setup_$MONSTERPI_NODEJS_VERSION | bash -
 apt update
-apt install -y nodejs gcc g++ make
+apt install -y nodejs
 npm install -g npm
-
-# curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor | sudo tee /usr/share/keyrings/yarnkey.g
-# sudo apt update && sudo apt install -y yarn
 
 # Yarn install
 npm install -g yarn
@@ -64,17 +65,18 @@ pushd /home/"${BASE_USER}"
     sudo -u "${BASE_USER}" git clone https://github.com/fdm-monster/fdm-monster.git /home/"${BASE_USER}"/fdm-monster
 
     cd /home/"${BASE_USER}"/fdm-monster/server
-    yarn install --production --pure-lockfile
+    yarn run install --production --frozen-lockfile --network-timeout 1000000000  
+
     cd /home/"${BASE_USER}"/fdm-monster-daemon
-    yarn run install    
+    npm i
 
     # setup haproxy for http and https
-    if [ "$MONSTERPI_INCLUDE_HAPROXY" == "yes" ]
-    then
-        echo "--- Installing haproxy"
-        apt -y install ssl-cert haproxy
-        rm /etc/ssl/private/ssl-cert-snakeoil.key /etc/ssl/certs/ssl-cert-snakeoil.pem
-    fi
+    # if [ "$MONSTERPI_INCLUDE_HAPROXY" == "yes" ]
+    # then
+    #     echo "--- Installing haproxy"
+    #     apt -y install ssl-cert haproxy
+    #     rm /etc/ssl/private/ssl-cert-snakeoil.key /etc/ssl/certs/ssl-cert-snakeoil.pem
+    # fi
 popd
 
 # Unpack root at the end, so files are modified before
