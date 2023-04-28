@@ -1,5 +1,5 @@
 export DIST_NAME=MonsterPi
-export DIST_VERSION=0.1.0
+export DIST_VERSION=0.1.1
 
 export BASE_DISTRO=ubuntu
 export BASE_ARCH=aarch64
@@ -14,7 +14,7 @@ export RPI_IMAGER_DESCRIPTION="FDM Monster RaspberryPi distro built with CustomP
 export RPI_IMAGER_WEBSITE="https://github.com/fdm-monster/monster-pi"
 export RPI_IMAGER_ICON="https://github.com/fdm-monster/fdm-monster/blob/ba18cb7049a137939f9d2845d4d32507c9dbba08/docs/images/logo-copyright.png"
 
-export BASE_IMAGE_ENLARGEROOT=1000
+export BASE_IMAGE_ENLARGEROOT=1500
 export BASE_IMAGE_RESIZEROOT=250
 
 export MODULES="base(network, disable-services(monsterpi), password-for-sudo)"
