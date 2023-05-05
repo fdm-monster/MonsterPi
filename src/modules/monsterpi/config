@@ -9,8 +9,3 @@
 
 # HAProxy
 [ -n "$MONSTERPI_INCLUDE_HAPROXY" ] || MONSTERPI_INCLUDE_HAPROXY=yes
-
-[ -n "$MONSTERPI_COMMIT" ] || MONSTERPI_COMMIT=`pushd "${DIST_PATH}" > /dev/null ; git rev-parse HEAD ; popd > /dev/null`
-
-# Fixed apt mirror
-[ -n "$MONSTERPI_APTMIRROR" ] || MONSTERPI_APTMIRROR=
