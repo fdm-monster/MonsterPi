@@ -2,7 +2,7 @@
 
 _NAME=$(hostname)
 _IP=$(hostname -I)
-_FDM_MONSTER_VERSION=$(jq -r .version /home/pi/fdm-monster/server/package.json || echo "unknown")
+_FDM_MONSTER_VERSION=$(jq -r .version ~/fdm-monster/server/package.json || echo "unknown")
 _MONSTERPI_VERSION=$(cat /etc/monsterpi_version || echo "unknown")
 
 echo
