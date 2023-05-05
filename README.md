@@ -5,10 +5,10 @@
 
 # MonsterPi
 
-This repository is a Raspberry Pi image builder for running FDM Monster.
+This repository is a Raspberry Pi image builder for running [FDM Monster](https://github.com/fdm-monster/fdm-monster).
 The work is a culmination of [CustomPiOS](https://github.com/guysoft/CustomPiOS) by G. Sheffer, [FarmPi](https://github.com/mkevenaar/FarmPi) by M. Kevenaar and my own private 4xOctoPrint Pi OS image.
 
-- Please check out [FDM Monster's repository](https://github.com/fdm-monster/fdm-monster): 
+- Please check out [FDM Monster's repository](https://github.com/fdm-monster/fdm-monster)
 - Please check out [MonsterPi's documentation](https://docs.fdm-monster.net/guides/monsterpi) to get started
 - Please consider donation to the project or its individual contributors if you like this project!
 
