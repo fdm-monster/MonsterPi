@@ -1,11 +1,19 @@
+<div style="display: inline">
+  <img src="assets/logo-copyright.png" width="150" /> <strong>+</strong> <img src="assets/CustomPiOS.png" style="margin-left: 15px" width="200" />
+    = <strong>MonsterPi !</strong>
+</div>
+
 # MonsterPi
 
-TBD
-
 This repository is a Raspberry Pi image builder for running FDM Monster.
-The work is a culmination of CustomPiOS, FarmPi by M.Kevenaar and my own private 4xOctoPrint Pi OS image.
+The work is a culmination of [CustomPiOS](https://github.com/guysoft/CustomPiOS) by G. Sheffer, [FarmPi](https://github.com/mkevenaar/FarmPi) by M. Kevenaar and my own private 4xOctoPrint Pi OS image.
 
-Please check out FDM Monster here: https://github.com/fdm-monster/fdm-monster
+- Please check out [FDM Monster's repository](https://github.com/fdm-monster/fdm-monster): 
+- Please check out [MonsterPi's documentation](https://docs.fdm-monster.net/guides/monsterpi) to get started
+- Please consider donation to the project or its individual contributors if you like this project!
+
+<!--ts-->
+<!--te-->
 
 ## How to use it?
 
