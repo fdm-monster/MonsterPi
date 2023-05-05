@@ -3,7 +3,8 @@
 /**
  * Created by D. Zwart
  * Description: Performs all the steps to update FDM Monster
- * v1.0
+ * Last change: Update is running from the known server/daemon folders with push/popd
+ * v1.1
  * 05/05/2023
  */
 '
@@ -22,9 +23,10 @@ fi
 
 # Step 0b) Set the variables needed later
 ts=6 # total steps
-temp_updates_dir=temp-updates
 org=fdm-monster
 repo=fdm-monster
+server_path="/home/pi/fdm-monster/server/"
+daemon_path="/home/pi/fdm-monster-daemon/"
 repo_url="https://github.com/${org}/${repo}"
 
 # Step 1) Check latest release of FDM Monster
@@ -34,13 +36,14 @@ echo "[1/${ts}] Found the latest release ${tag}"
 # Step 2) Temporarily stop FDM Monster Daemon
 # `curl 0.0.0.0:4000` will fail to connect, you can test it if you want to be sure
 echo "[2/${ts}] Stopping FDM Monster before an update"
+pushd "${daemon_path}"
 npm run uninstall
 
 # Step 3) Switch the latest FDM Monster to this tag
-pushd ../fdm-monster/server/
+pushd "${server_path}"
 echo "[3/${ts}] Finding the latest version of FDM Monster from Github"
-git fetch
-git checkout $tag
+git fetch --prune
+git checkout "${tag}"
 
 # Step 4a) Ensure yarn is new, (optional)
 # npm i -g yarn
@@ -54,4 +57,5 @@ popd
 echo "[5/${ts}] Installing FDM Monster version ${tag}"
 npm run install
 
-echo "[6/${ts}] Upgrading FDM Monster completed"
+echo "[6/${ts}] Upgrading FDM Monster completed, you can verify with 'curl http://0.0.0.0:4000'"
+popd
