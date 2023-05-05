@@ -1,0 +1,34 @@
+#!/bin/bash
+
+_NAME=$(hostname)
+_IP=$(hostname -I)
+_FDM_MONSTER_VERSION=$(jq -r .version /home/pi/fdm-monster/server/package.json || echo "unknown")
+_MONSTERPI_VERSION=$(cat /etc/monsterpi_version || echo "unknown")
+
+echo
+echo "------------------------------------------------------------------------------"
+echo "Access FDM Monster from a web browser on your network by navigating to any of:"
+echo
+
+for name in $_NAME;
+do
+    echo "    http://$name.local"
+done
+for ip in $_IP;
+do
+    if [[ $ip =~ .*:.* ]]
+    then
+        echo "    http://[$ip]"
+    else
+        echo "    http://$ip"
+    fi
+done
+
+echo
+echo "https is also available, with a self-signed certificate."
+echo
+echo "------------------------------------------------------------------------------"
+echo "FDM Monster version : $_FDM_MONSTER_VERSION"
+echo "MonsterPi version   : $_MONSTERPI_VERSION"
+echo "------------------------------------------------------------------------------"
+echo

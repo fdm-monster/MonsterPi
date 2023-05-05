@@ -77,11 +77,56 @@ pushd /home/"${BASE_USER}"
     # Setup haproxy for http and https
     if [ "$MONSTERPI_INCLUDE_HAPROXY" == "yes" ]
     then
-        echo "--- Installing haproxy"
         apt -y install ssl-cert haproxy
         rm /etc/ssl/private/ssl-cert-snakeoil.key /etc/ssl/certs/ssl-cert-snakeoil.pem
     fi
 popd
 
+# add some "How To" info to boot output
+# Note, this code is also in /filesystem/home/pi/scripts/
+sed -i 's@exit 0@@' /etc/rc.local
+cat <<'EOT' >> /etc/rc.local
+
+echo
+echo "------------------------------------------------------------"
+echo
+echo "You may now open a web browser on your local network and "
+echo "navigate to any of the following addresses to access "
+echo "FDM Monser:"
+echo
+for name in $_NAME;
+do
+    echo " http://$name.local"
+done
+
+for ip in $(hostname -I);
+do
+    echo "    http://$ip"
+done
+
+echo
+echo "https is also available, with a self-signed certificate."
+echo
+echo "------------------------------------------------------------"
+echo
+EOT
+echo 'exit 0' >> /etc/rc.local
+
+# Add a longer welcome text to ~pi/.bashrc / ~${BASE_USER}/.bashrc
+echo "source /home/${BASE_USER}/scripts/welcome" >> /home/"${BASE_USER}"/.bashrc
+
 # Unpack root at the end, so files are modified before
 unpack /filesystem/root /
+
+# Enable certificate generation
+if [ "$MONSTERPI_INCLUDE_HAPROXY" == "yes" ]
+then
+  systemctl_if_exists enable gencert.service
+else
+  # Remove the configs for system services we don't need
+  rm /etc/systemd/system/gencert.service
+fi
+
+# Cleanup APT
+apt-get clean
+apt-get autoremove -y
