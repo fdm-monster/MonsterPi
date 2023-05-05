@@ -27,3 +27,33 @@ FDM Monster is located at [http://monsterpi.local](http://monsterpi.local) and a
 
 * [FDM Monster](https://fdm-monster.net) software for managing and monitoring 100+ Octoprint instances
 * [Ubuntu](https://ubuntu.com/download/raspberry-pi) Raspberry Pi distro image.
+
+## Contributors ✨
+
+These are the people involved in the project:
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/davidzwa"><img src="https://avatars.githubusercontent.com/u/6005355?v=4?s=80" width="80px;" alt="David Zwart"/><br /><sub><b>David Zwart</b></sub></a><br /><a href="https://github.com/fdm-monster/MonsterPi/issues?q=author%3Adavidzwa" title="Bug reports">🐛</a> <a href="https://github.com/fdm-monster/MonsterPi/commits?author=davidzwa" title="Code">💻</a> <a href="#maintenance-davidzwa" title="Maintenance">🚧</a> <a href="#userTesting-davidzwa" title="User Testing">📓</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://kevenaar.name"><img src="https://avatars.githubusercontent.com/u/834643?v=4?s=80" width="80px;" alt="Maurice Kevenaar"/><br /><sub><b>Maurice Kevenaar</b></sub></a><br /><a href="https://github.com/fdm-monster/MonsterPi/commits?author=mkevenaar" title="Code">💻</a> <a href="#ideas-mkevenaar" title="Ideas, Planning, & Feedback">🤔</a> <a href="https://github.com/fdm-monster/MonsterPi/pulls?q=is%3Apr+reviewed-by%3Amkevenaar" title="Reviewed Pull Requests">👀</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<table></table>
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
