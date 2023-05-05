@@ -38,7 +38,7 @@ jobs:
     # wget -c --trust-server-names 'https://cdimage.ubuntu.com/releases/22.04/release/ubuntu-22.04.2-preinstalled-server-arm64+raspi.img.xz'
     - name: Download Raspbian Image
       run: |
-        cd repository/src/image    
+        cd repository/src/image
         wget -c --trust-server-names 'https://cdimage.ubuntu.com/releases/20.04/release/ubuntu-20.04.5-preinstalled-server-arm64+raspi.img.xz'
 
     - name: Update CustomPiOS Paths
@@ -75,12 +75,3 @@ jobs:
       run: |
         zip ${{ steps.copy.outputs.image }}.zip ${{ steps.copy.outputs.image }}.img
 
-    # - name: Upload to server
-    #   if: github.event_name == 'schedule'
-    #   uses: garygrossgarten/github-action-scp@v0.8.0
-    #   with:
-    #     local: '${{ steps.copy.outputs.image }}.zip'
-    #     remote: '/web/farmpi.octofarm.net/public_html/nightly/${{ steps.copy.outputs.image }}.zip'
-    #     host: '${{ secrets.SSH_REMOTE_HOST }}'
-    #     username: '${{ secrets.SSH_USERNAME }}'
-    #     privateKey: ${{ secrets.SSH_PRIVATE_KEY }}

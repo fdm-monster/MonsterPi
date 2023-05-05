@@ -10,23 +10,22 @@ assignees: ''
 <!--
 READ THE FOLLOWING FIRST:
 
-Also read the FAQ: https://octofarm.net/installation/
+Also read the documentation: https://docs.fdm-monster.net/
 
 This is a bug and feature tracker, please only use it to report bugs
 or request features within FarmPi.
-If its not a bug please use the discord community: https://discord.octofarm.net/
+If its not a bug please use the discord community: https://discord.gg/mwA8uP8CMc
 
 Do not seek support here ("I need help with ...", "I have a
-question ..."), that belongs on discord at
-discord.octofarm.net, NOT here.
+question ..."), that belongs on discord, NOT here.
 
 Thank you!
 -->
 
-#### FarmPi version
+#### MonsterPi version
 
 <!---
-Can be found by logging in or executing cat /etc/farmpi_version
+Can be found by logging in or executing cat /etc/monsterpi_version
 -->
 Version:
 
