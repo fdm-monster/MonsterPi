@@ -1,3 +1,10 @@
+/**
+ * Created by D. Zwart
+ * Description: Installs the Linux Service for MonsterPi's FDM Monster
+ * v1.0
+ * 05/05/2023
+ */
+
 const { Service } = require('node-linux');
 const { join } = require("path");
 
