@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
-# <Script Name>
-# <Description what this module does>
-# Written by <Author>
+# start_chroot_script
+# This installs MongoDB as well as FDM Monster and HAProxy
+# Written by David Zwart
 # GPL V3
 ########
-
 
 # Source error handling, leave this in place
 set -x
 set -e
+
+org=fdm-monster
+repo=fdm-monster
+repo_url="https://github.com/${org}/${repo}"
 
 source /common.sh
 install_cleanup_trap
@@ -19,65 +22,59 @@ unpack /filesystem/boot /boot
 
 apt update
 
-# In case we are building from a regular raspbian image instead of the lite one...
+# Optimize apt packages by removing unused ones
 remove_extra=$(remove_if_installed scratch squeak-plugins-scratch squeak-vm wolfram-engine python-minecraftpi minecraft-pi sonic-pi oracle-java8-jdk bluej libreoffice-common libreoffice-core freepats greenfoot nodered)
-echo "removing:" $remove_extra
-apt-get remove -y --purge  $remove_extra
+echo "removing:" "$remove_extra"
+apt-get remove -y --purge  "$remove_extra"
 apt-get autoremove -y
-
 if [ "${BASE_DISTRO}" == "ubuntu" ]; then
     apt-get -y install jq git screen libffi-dev libssl-dev libatlas3-base libraspberrypi-bin rpi.gpio-common ca-certificates
 else
     apt-get -y install jq git screen libffi-dev libssl-dev libatlas3-base ca-certificates
 fi
 
-# echo " - Reinstall iputils-ping"
-# apt-get install --reinstall iputils-ping
-
-# GPG
+# Install GPG
 apt install -y gnupg
 
-# # MongoDB 6.0 attempt
-# curl -fsSL https://pgp.mongodb.com/server-$MONSTERPI_MONGODB_VERSION.asc | \
-#    sudo gpg -o /usr/share/keyrings/mongodb-server-$MONSTERPI_MONGODB_VERSION.gpg \
-#    --dearmor
-# # TODO focal, jammy are dependent on (LTS) OS, but only MongoDB 6.0 is available for 22.04 LTS... so there's no real point variating the MONSTERPI_NODEJS_VERSION
-# echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-$MONSTERPI_MONGODB_VERSION.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/$MONSTERPI_MONGODB_VERSION multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-$MONSTERPI_MONGODB_VERSION.list
-# apt update
-# apt install -y mongodb-org
-# systemctl enable mongod
-# systemctl start mongod
-
-wget -qO - https://www.mongodb.org/static/pgp/server-$MONSTERPI_MONGODB_VERSION.asc | sudo apt-key add -
+# Add MongoDB as trusted source list
+wget -qO - https://www.mongodb.org/static/pgp/server-"$MONSTERPI_MONGODB_VERSION".asc | sudo apt-key add -
 echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/`cat /etc/os-release | grep "^ID=" | cut -d "=" -f2` `cat /etc/os-release | grep "^VERSION_CODENAME=" | cut -d "=" -f2`/mongodb-org/$MONSTERPI_MONGODB_VERSION multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-$MONSTERPI_MONGODB_VERSION.list
 apt update
-# apt install -y --force-yes mongodb-org
+
+# Install MongoDB
 sudo apt install -y mongodb-org=4.4.15 mongodb-org-server=4.4.15 mongodb-org-shell=4.4.15 mongodb-org-mongos=4.4.15 mongodb-org-tools=4.4.15
 systemctl enable mongod
 systemctl start mongod
 
-# curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+# Install NodeJS based on MONSTERPI_NODEJS_VERSION
 curl -sL https://deb.nodesource.com/setup_$MONSTERPI_NODEJS_VERSION | bash -
 apt update
 apt install -y nodejs
-npm install -g npm
 
-# Yarn install
+# Update NPM and install yarn globally
+npm install -g npm
 npm install -g yarn
 
 pushd /home/"${BASE_USER}"
+    # Fetch latest release of FDM Monster
+    tag=$(git ls-remote --tags $repo_url | awk -F"/" '{print $NF}' | grep -E "^[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+$" | sort -V | tail -1)
+
     # Install FDM Monster
-    sudo -u "${BASE_USER}" git clone https://github.com/fdm-monster/fdm-monster.git /home/"${BASE_USER}"/fdm-monster
+    sudo -u "${BASE_USER}" git clone https://github.com/fdm-monster/fdm-monster.git /home/"${BASE_USER}"/fdm-monster --branch "${tag}"
 
+    # Update the packages (this is really slow on QEMU!)
     cd /home/"${BASE_USER}"/fdm-monster/server
-    yarn install --production --frozen-lockfile --network-timeout 1000000000  
+    yarn install --production --frozen-lockfile --network-timeout 1000000000
 
+    # Prepare the systemd service
     cd /home/"${BASE_USER}"/fdm-monster-daemon
     npm i node-linux
     npm i
+
+    # Enable the systemd service at boot
     systemctl enable fdmmonster
 
-    # setup haproxy for http and https
+    # Setup haproxy for http and https
     if [ "$MONSTERPI_INCLUDE_HAPROXY" == "yes" ]
     then
         echo "--- Installing haproxy"
