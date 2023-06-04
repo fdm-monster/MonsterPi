@@ -13,6 +13,16 @@ org=fdm-monster
 repo=fdm-monster
 repo_url="https://github.com/${org}/${repo}"
 
+# Fetch latest release of FDM Monster
+if [ -z ${MONSTERPI_FDMMONSTER_VERSION+x} ]
+then
+    tag=$(git ls-remote --tags $repo_url | awk -F"/" '{print $NF}' | grep -E "^[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+$" | sort -V | tail -1)
+    echo "Git tag loaded $tag"
+else 
+    tag=${MONSTERPI_FDMMONSTER_VERSION}
+    echo "Preset tag used $tag"
+fi
+
 source /common.sh
 install_cleanup_trap
 
@@ -56,9 +66,6 @@ npm install -g npm
 npm install -g yarn
 
 pushd /home/"${BASE_USER}"
-    # Fetch latest release of FDM Monster
-    tag=$(git ls-remote --tags $repo_url | awk -F"/" '{print $NF}' | grep -E "^[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+$" | sort -V | tail -1)
-
     # Install FDM Monster
     sudo -u "${BASE_USER}" git clone https://github.com/fdm-monster/fdm-monster.git /home/"${BASE_USER}"/fdm-monster --branch "${tag}"
 
