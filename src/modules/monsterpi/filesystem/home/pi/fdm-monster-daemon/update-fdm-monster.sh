@@ -30,8 +30,26 @@ daemon_path="/home/pi/fdm-monster-daemon/"
 repo_url="https://github.com/${org}/${repo}"
 
 # Step 1) Check latest release of FDM Monster
-tag=$(git ls-remote --tags $repo_url | awk -F"/" '{print $NF}' | grep -E "^[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+$" | sort -V | tail -1)
-echo "[1/${ts}] Found the latest release ${tag}"
+tags="$(git ls-remote --sort=-v:refname --tags $repo_url | awk -F"/" '{print $NF}')"
+newest_tag=$(echo "$tags" | sort -V | tail -1)
+
+# Check if the tag contains "-rc" or "-unstable"
+if [[ $newest_tag == *"-rc"* || $newest_tag == *"-unstable"* ]]; then
+    echo "Newest tag is $newest_tag which seems to be a release candidate or unstable version."
+    echo "Do you want to install this tag(Y) or install the latest stable(N) (Y/N)?"
+    read -r response
+
+    if [[ $response == "Y" || $response == "y" ]]; then
+        # Install the tag
+        echo "[1/${ts}] Installing tag $newest_tag"
+    else
+        # Search for the latest stable tag in x.y.z format
+        newest_tag=$(echo "$tags" | grep -E "^[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+$" | sort -V | tail -1)
+        echo "[1/${ts}] Installing latest stable tag: $newest_tag"
+    fi
+else
+    echo "[1/${ts}] Installing latest stable tag: $newest_tag"
+fi
 
 # Step 2) Temporarily stop FDM Monster Daemon
 # `curl 0.0.0.0:4000` will fail to connect, you can test it if you want to be sure
@@ -42,8 +60,8 @@ npm run uninstall
 # Step 3) Switch the latest FDM Monster to this tag
 pushd "${server_path}"
 echo "[3/${ts}] Finding the latest version of FDM Monster from Github"
-git fetch --prune
-git checkout "${tag}"
+git fetch --prune --tags
+git checkout "${newest_tag}"
 
 # Step 4a) Ensure yarn is new, (optional)
 # npm i -g yarn
@@ -54,7 +72,7 @@ yarn install --production --pure-lockfile
 
 # Step 5) Run the service
 popd
-echo "[5/${ts}] Installing FDM Monster version ${tag}"
+echo "[5/${ts}] Installing FDM Monster version ${newest_tag}"
 npm run install
 
 echo "[6/${ts}] Upgrading FDM Monster completed, you can verify with 'curl http://0.0.0.0:4000'"
