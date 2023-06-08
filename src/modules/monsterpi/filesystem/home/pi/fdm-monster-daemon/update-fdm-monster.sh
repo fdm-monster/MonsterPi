@@ -60,7 +60,7 @@ npm run uninstall
 # Step 3) Switch the latest FDM Monster to this tag
 pushd "${server_path}"
 echo "[3/${ts}] Finding the latest version of FDM Monster from Github"
-git fetch --prune
+git fetch --prune --tags
 git checkout "${tag}"
 
 # Step 4a) Ensure yarn is new, (optional)
