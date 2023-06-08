@@ -61,7 +61,7 @@ npm run uninstall
 pushd "${server_path}"
 echo "[3/${ts}] Finding the latest version of FDM Monster from Github"
 git fetch --prune --tags
-git checkout "${tag}"
+git checkout "${newest_tag}"
 
 # Step 4a) Ensure yarn is new, (optional)
 # npm i -g yarn
@@ -72,7 +72,7 @@ yarn install --production --pure-lockfile
 
 # Step 5) Run the service
 popd
-echo "[5/${ts}] Installing FDM Monster version ${tag}"
+echo "[5/${ts}] Installing FDM Monster version ${newest_tag}"
 npm run install
 
 echo "[6/${ts}] Upgrading FDM Monster completed, you can verify with 'curl http://0.0.0.0:4000'"
