@@ -1,4 +1,4 @@
-blank_issues_enabled: false
+blank_issues_enabled: true
 contact_links:
   - name: Ask Questions in discord
     url: https://discord.gg/mwA8uP8CMc
