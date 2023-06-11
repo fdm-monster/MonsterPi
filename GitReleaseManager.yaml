@@ -1,23 +1,21 @@
 issue-labels-include:
-- Breaking change
-- Feature
-- Bug
-- Improvement
-- Documentation
-- security
+- bug
+- documentation
+- enhancement
+- security fix
 issue-labels-exclude:
-- Build
+- invalid
+- question
+- wontfix
 issue-labels-alias:
-    - name:    Documentation
-      header:  Documentation
-      plural:  Documentation
-    - name:    security
-      header:  Security
-      plural:  Security
+    - name: documentation
+      header: Documentation
+      plural: Documentation
+    - name: security
+      header: Security
+      plural: Security
 create:
-    include-sha-section: true
-    sha-section-heading: "SHA256 Hashes of the release artifacts"
-    sha-section-line-format: "- `{1}\t{0}`"
+    include-sha-section: false
 close:
   use-issue-comments: true
   issue-comment: |-
