@@ -1,5 +1,6 @@
 issue-labels-include:
 - bug
+- deployment
 - documentation
 - enhancement
 - security fix
@@ -8,12 +9,15 @@ issue-labels-exclude:
 - question
 - wontfix
 issue-labels-alias:
-    - name: documentation
-      header: Documentation
-      plural: Documentation
-    - name: security
-      header: Security
-      plural: Security
+  - name: deployment
+    header: Deployment
+    plural: Deployment
+  - name: documentation
+    header: Documentation
+    plural: Documentation
+  - name: security
+    header: Security
+    plural: Security
 create:
     include-sha-section: false
 close:
