@@ -16,9 +16,10 @@ repo_url="https://github.com/${org}/${repo}"
 # Fetch latest release of FDM Monster
 if [ -z ${MONSTERPI_FDMMONSTER_VERSION+x} ]
 then
+    # This will not download RC or unstable versions due to the x.y.z grep regex filter
     tag=$(git ls-remote --tags $repo_url | awk -F"/" '{print $NF}' | grep -E "^[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+$" | sort -V | tail -1)
     echo "Git tag loaded $tag"
-else 
+else
     tag=${MONSTERPI_FDMMONSTER_VERSION}
     echo "Preset tag used $tag"
 fi
