@@ -65,11 +65,13 @@ jobs:
       id: copy
       run: |
         source repository/src/config
-        IMAGE=monsterpi-$DIST_VERSION
+        VERSION=${DIST_VERSION}
+        IMAGE=monsterpi-$VERSION
 
         cp repository/src/workspace/*.img $IMAGE.img
 
-        echo "::set-output name=image::$IMAGE"
+        echo "tag=$VERSION" >> $GITHUB_OUTPUT
+        echo "image=$IMAGE" >> $GITHUB_OUTPUT
 
     - name: Zip Image
       run: |
@@ -87,9 +89,9 @@ jobs:
       id: create_release
       with:
         draft: ${{ github.ref_name == 'develop' }}
-        prerelease: ${{ contains(env.SERVER_VERSION, 'rc') || contains(env.SERVER_VERSION, 'unstable') }}
-        tag_name: ${{ env.RELEASE_TAG }}
-        release_name: MonsterPi ${{ env.RELEASE_TAG }}
+        prerelease: ${{ contains(env.DIST_VERSION, 'rc') || contains(env.DIST_VERSION, 'unstable') }}
+        tag_name: ${{ steps.copy.outputs.image }}
+        release_name: MonsterPi ${{ steps.copy.outputs.image }}
         body: "Release notes not added" # ${{ steps.build_changelog.outputs.changelog }}
       env:
         GITHUB_TOKEN: ${{ github.token }}
