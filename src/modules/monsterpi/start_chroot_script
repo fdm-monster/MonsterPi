@@ -67,11 +67,6 @@ npm install -g npm
 npm install -g yarn
 
 pushd /home/"${BASE_USER}"
-    # Prepare the systemd service
-    cd /home/"${BASE_USER}"/fdm-monster-daemon
-    npm i node-linux
-    npm i
-
     # Install FDM Monster (this is really slow on QEMU!)
     cd /home/"${BASE_USER}"/scripts/
     bash ./update-fdm-monster.sh --tag "${tag}" --non-interactive
