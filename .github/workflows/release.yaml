@@ -82,34 +82,24 @@ jobs:
        separator: '/'
        msg: ${{ github.repository }}
 
-    - name: Install GitReleaseManager
-      uses: gittools/actions/gitreleasemanager/setup@v0.10.2
+    - name: Create release
+      uses: actions/create-release@v1
+      id: create_release
       with:
-       versionSpec: '0.13.x'
+        draft: ${{ github.ref_name == 'develop' }}
+        prerelease: ${{ contains(env.SERVER_VERSION, 'rc') || contains(env.SERVER_VERSION, 'unstable') }}
+        tag_name: ${{ env.RELEASE_TAG }}
+        release_name: ${{ env.RELEASE_TAG }} Awesome Axolotl 😃
+        body: "Release notes not added" # ${{ steps.build_changelog.outputs.changelog }}
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
 
-    - name: Create release with GitReleaseManager
-      uses: gittools/actions/gitreleasemanager/create@v0.10.2
+    - name: Upload server bundle zip
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
       with:
-       token: ${{ secrets.GITHUB_TOKEN }}
-       owner: ${{ steps.repo.outputs._0 }}
-       repository: ${{ steps.repo.outputs._1 }}
-       milestone: ${{ steps.gitversion.outputs.majorMinorPatch }}
-       name: 'Release ${{ steps.gitversion.outputs.majorMinorPatch }}'
-       assets:  |
-         ${{ steps.copy.outputs.image }}.zip
-
-    - name: Publish release with GitReleaseManager
-      uses: gittools/actions/gitreleasemanager/publish@v0.10.2
-      with:
-       token: ${{ secrets.GITHUB_TOKEN }}
-       owner: ${{ steps.repo.outputs._0 }}
-       repository: ${{ steps.repo.outputs._1 }}
-       tagName: ${{ steps.gitversion.outputs.majorMinorPatch }}
-
-    - name: Close release with GitReleaseManager
-      uses: gittools/actions/gitreleasemanager/close@v0.10.2
-      with:
-       token: ${{ secrets.GITHUB_TOKEN }}
-       owner: ${{ steps.repo.outputs._0 }}
-       repository: ${{ steps.repo.outputs._1 }}
-       milestone: ${{ steps.gitversion.outputs.majorMinorPatch }}
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: dist-server-${{ env.SERVER_VERSION }}.zip
+        asset_name: dist-server-${{ env.SERVER_VERSION }}.zip
+        asset_content_type: application/zip

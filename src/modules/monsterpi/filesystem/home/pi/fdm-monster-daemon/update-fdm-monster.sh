@@ -86,7 +86,7 @@ echo "[3/${ts}] Extracting new dist zip to ${dist_active_path}"
 
 # Step 4) Ensure the required packages are present with yarn (which is already installed, we're just keeping it fresh)
 echo "[4/${ts}] Updating the necessary modules of FDM Monster"
-yarn install --production --pure-lockfile
+yarn install --production --pure-lockfile --network-timeout 1000000000
 
 # Step 5) Run the service
 popd

@@ -75,3 +75,24 @@ jobs:
       run: |
         zip ${{ steps.copy.outputs.image }}.zip ${{ steps.copy.outputs.image }}.img
 
+    - name: Create release
+      uses: actions/create-release@v1
+      id: create_release
+      with:
+        draft: ${{ github.ref_name == 'develop' }}
+        prerelease: ${{ contains(env.SERVER_VERSION, 'rc') || contains(env.SERVER_VERSION, 'unstable') }}
+        tag_name: ${{ env.RELEASE_TAG }}
+        release_name: ${{ env.RELEASE_TAG }} Awesome Axolotl 😃
+        body: "Release notes not added" # ${{ steps.build_changelog.outputs.changelog }}
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
+    - name: Upload server bundle zip
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: dist-server-${{ env.SERVER_VERSION }}.zip
+        asset_name: dist-server-${{ env.SERVER_VERSION }}.zip
+        asset_content_type: application/zip

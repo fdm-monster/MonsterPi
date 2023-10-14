@@ -75,18 +75,14 @@ npm install -g npm
 npm install -g yarn
 
 pushd /home/"${BASE_USER}"
-    # Install FDM Monster
-    cd /home/"${BASE_USER}"/fdm-monster-daemon/
-    bash ./update-fdm-monster.sh
-
-    # Update the packages (this is really slow on QEMU!)
-    cd /home/"${BASE_USER}"/fdm-monster/
-    yarn install --production --frozen-lockfile --network-timeout 1000000000
-
     # Prepare the systemd service
     cd /home/"${BASE_USER}"/fdm-monster-daemon
     npm i node-linux
     npm i
+
+    # Install FDM Monster (this is really slow on QEMU!)
+    cd /home/"${BASE_USER}"/fdm-monster-daemon/
+    bash ./update-fdm-monster.sh
 
     # Enable the systemd service at boot
     systemctl enable fdmmonster
