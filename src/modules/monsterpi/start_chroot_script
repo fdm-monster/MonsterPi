@@ -39,13 +39,21 @@ echo "removing:" "$remove_extra"
 apt-get remove -y --purge  "$remove_extra"
 apt-get autoremove -y
 if [ "${BASE_DISTRO}" == "ubuntu" ]; then
-    apt-get -y install jq git screen libffi-dev libssl-dev libatlas3-base libraspberrypi-bin rpi.gpio-common ca-certificates
+    apt-get -y install jq git screen libffi-dev libssl-dev libatlas3-base libraspberrypi-bin rpi.gpio-common ca-certificates p7zip-full
 else
-    apt-get -y install jq git screen libffi-dev libssl-dev libatlas3-base ca-certificates
+    apt-get -y install jq git screen libffi-dev libssl-dev libatlas3-base ca-certificates p7zip-full
 fi
 
 # Install GPG
 apt install -y gnupg
+
+# Install Github CLI
+type -p curl >/dev/null || (sudo apt update && sudo apt install curl -y)
+curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+&& sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+&& echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+&& sudo apt update \
+&& sudo apt install gh -y
 
 # Add MongoDB as trusted source list
 wget -qO - https://www.mongodb.org/static/pgp/server-"$MONSTERPI_MONGODB_VERSION".asc | sudo apt-key add -

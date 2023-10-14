@@ -4,8 +4,8 @@
  * Created by D. Zwart
  * Description: Performs all the steps to update FDM Monster
  * Last change: Update is running from the known server/daemon folders with push/popd
- * v1.1
- * 05/05/2023
+ * v2.0
+ * 14th of October 2023
  */
 '
 
@@ -25,8 +25,11 @@ fi
 ts=6 # total steps
 org=fdm-monster
 repo=fdm-monster
-server_path="/home/pi/fdm-monster/server/"
+server_path="/home/pi/fdm-monster/"
 daemon_path="/home/pi/fdm-monster-daemon/"
+dist_zips_path="/home/pi/fdm-monster/dist-zips/"
+dist_active_path="/home/pi/fdm-monster/dist/"
+dist_prefix="dist-server"
 repo_url="https://github.com/${org}/${repo}"
 
 # Step 1) Check latest release of FDM Monster
@@ -60,8 +63,23 @@ npm run uninstall
 # Step 3) Switch the latest FDM Monster to this tag
 pushd "${server_path}"
 echo "[3/${ts}] Finding the latest version of FDM Monster from Github"
-git fetch --prune --tags
-git checkout "${newest_tag}"
+
+## Step 3b
+echo "[3/${ts}] Ensuring folders are created"
+mkdir -p $dist_active_path
+mkdir -p $dist_zips_path
+tag=$(gh release view --repo https://github.com/$org/$repo --json tagName --jq .tagName)
+echo "[3/${ts}] Downloading version version ${tag} of FDM Monster from Github"
+gh release download $tag --clobber --repo https://github.com/$org/$repo --dir "${dist_zips_path}" --clobber
+
+## CLEAR OLD DIST FOLDER
+echo "[3/${ts}] Clearing old dist folder"
+rm -fr $dist_active_path
+mkdir -p $dist_active_path
+
+## EXTRACT NEW DIST ZIP
+echo "[3/${ts}] Extracting new dist zip to ${dist_active_path}"
+7z x "${dist_zips_path}/${dist_prefix}-${tag}.zip" -o"${dist_active_path}"
 
 # Step 4a) Ensure yarn is new, (optional)
 # npm i -g yarn
