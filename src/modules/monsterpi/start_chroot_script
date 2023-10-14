@@ -76,10 +76,11 @@ npm install -g yarn
 
 pushd /home/"${BASE_USER}"
     # Install FDM Monster
-    sudo -u "${BASE_USER}" git clone https://github.com/fdm-monster/fdm-monster.git /home/"${BASE_USER}"/fdm-monster --branch "${tag}"
+    cd /home/"${BASE_USER}"/fdm-monster-daemon/
+    bash ./update-fdm-monster.sh
 
     # Update the packages (this is really slow on QEMU!)
-    cd /home/"${BASE_USER}"/fdm-monster/server
+    cd /home/"${BASE_USER}"/fdm-monster/
     yarn install --production --frozen-lockfile --network-timeout 1000000000
 
     # Prepare the systemd service
