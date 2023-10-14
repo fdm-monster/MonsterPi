@@ -47,14 +47,6 @@ fi
 # Install GPG
 apt install -y gnupg
 
-# Install Github CLI
-type -p curl >/dev/null || (sudo apt update && sudo apt install curl -y)
-curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
-&& sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
-&& echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
-&& sudo apt update \
-&& sudo apt install gh -y
-
 # Add MongoDB as trusted source list
 wget -qO - https://www.mongodb.org/static/pgp/server-"$MONSTERPI_MONGODB_VERSION".asc | sudo apt-key add -
 echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/`cat /etc/os-release | grep "^ID=" | cut -d "=" -f2` `cat /etc/os-release | grep "^VERSION_CODENAME=" | cut -d "=" -f2`/mongodb-org/$MONSTERPI_MONGODB_VERSION multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-$MONSTERPI_MONGODB_VERSION.list
@@ -81,8 +73,8 @@ pushd /home/"${BASE_USER}"
     npm i
 
     # Install FDM Monster (this is really slow on QEMU!)
-    cd /home/"${BASE_USER}"/fdm-monster-daemon/
-    bash ./update-fdm-monster.sh
+    cd /home/"${BASE_USER}"/scripts/
+    bash ./update-fdm-monster.sh --tag "${tag}" --non-interactive
 
     # Enable the systemd service at boot
     systemctl enable fdmmonster

@@ -1,15 +1,15 @@
 /**
  * Created by D. Zwart
  * Description: Uninstalls the Linux Service for MonsterPi's FDM Monster
- * v1.0
- * 05/05/2023
+ * v2.0
+ * 14/10/2023
  */
 
 const { Service } = require("node-linux");
 const { join } = require("path");
 
 // Create a new service object
-const rootPath = join(__dirname, "../fdm-monster/");
+const rootPath = join(__dirname, "../fdm-monster/dist-active");
 const svc = new Service({
   name: "FDM Monster",
   description:
