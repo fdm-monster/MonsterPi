@@ -190,7 +190,7 @@ popd
 
 # Step 10) Run the service
 popd
-echo "[10/${ts}] Installing FDM Monster service with version $tag}"
+echo "[10/${ts}] Installing FDM Monster service with version $tag"
 npm run install
 
 echo "[11/${ts}] Upgrading FDM Monster completed, you can verify with 'curl http://0.0.0.0:4000'"
