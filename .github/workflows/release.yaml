@@ -66,7 +66,7 @@ jobs:
       run: |
         source repository/src/config
         TAG=${DIST_VERSION}
-        IMAGE=monsterpi-$VERSION
+        IMAGE=monsterpi-$TAG
 
         cp repository/src/workspace/*.img $IMAGE.img
 
