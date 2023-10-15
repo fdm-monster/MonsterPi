@@ -65,51 +65,36 @@ jobs:
       id: copy
       run: |
         source repository/src/config
-        IMAGE=monsterpi-$DIST_VERSION
+        VERSION=${DIST_VERSION}
+        IMAGE=monsterpi-$VERSION
 
         cp repository/src/workspace/*.img $IMAGE.img
 
-        echo "::set-output name=image::$IMAGE"
+        echo "tag=$VERSION" >> $GITHUB_OUTPUT
+        echo "image=$IMAGE" >> $GITHUB_OUTPUT
 
     - name: Zip Image
       run: |
         zip ${{ steps.copy.outputs.image }}.zip ${{ steps.copy.outputs.image }}.img
 
-    - name: Extract owner and repo
-      uses: jungwinter/split@v2.1.0
-      id: repo
+    - name: Create release
+      uses: actions/create-release@v1
+      id: create_release
       with:
-       separator: '/'
-       msg: ${{ github.repository }}
+        draft: ${{ github.ref_name == 'develop' }}
+        prerelease: ${{ contains(env.DIST_VERSION, 'rc') || contains(env.DIST_VERSION, 'unstable') }}
+        tag_name: ${{ steps.copy.outputs.version }}
+        release_name: MonsterPi ${{ steps.copy.outputs.image }}
+        body: "Release notes not added" # ${{ steps.build_changelog.outputs.changelog }}
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
 
-    - name: Install GitReleaseManager
-      uses: gittools/actions/gitreleasemanager/setup@v0.10.2
+    - name: Upload server bundle zip
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
       with:
-       versionSpec: '0.13.x'
-
-    - name: Create release with GitReleaseManager
-      uses: gittools/actions/gitreleasemanager/create@v0.10.2
-      with:
-       token: ${{ secrets.GITHUB_TOKEN }}
-       owner: ${{ steps.repo.outputs._0 }}
-       repository: ${{ steps.repo.outputs._1 }}
-       milestone: ${{ steps.gitversion.outputs.majorMinorPatch }}
-       name: 'Release ${{ steps.gitversion.outputs.majorMinorPatch }}'
-       assets:  |
-         ${{ steps.copy.outputs.image }}.zip
-
-    - name: Publish release with GitReleaseManager
-      uses: gittools/actions/gitreleasemanager/publish@v0.10.2
-      with:
-       token: ${{ secrets.GITHUB_TOKEN }}
-       owner: ${{ steps.repo.outputs._0 }}
-       repository: ${{ steps.repo.outputs._1 }}
-       tagName: ${{ steps.gitversion.outputs.majorMinorPatch }}
-
-    - name: Close release with GitReleaseManager
-      uses: gittools/actions/gitreleasemanager/close@v0.10.2
-      with:
-       token: ${{ secrets.GITHUB_TOKEN }}
-       owner: ${{ steps.repo.outputs._0 }}
-       repository: ${{ steps.repo.outputs._1 }}
-       milestone: ${{ steps.gitversion.outputs.majorMinorPatch }}
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ steps.copy.outputs.image }}.zip
+        asset_name: ${{ steps.copy.outputs.image }}.zip
+        asset_content_type: application/zip

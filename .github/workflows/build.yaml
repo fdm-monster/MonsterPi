@@ -36,7 +36,7 @@ jobs:
         submodules: true
 
     # wget -c --trust-server-names 'https://cdimage.ubuntu.com/releases/22.04/release/ubuntu-22.04.2-preinstalled-server-arm64+raspi.img.xz'
-    - name: Download Raspbian Image
+    - name: Download Raspbian or Ubuntu Image
       run: |
         cd repository/src/image
         wget -c --trust-server-names 'https://cdimage.ubuntu.com/releases/20.04/release/ubuntu-20.04.5-preinstalled-server-arm64+raspi.img.xz'
@@ -64,14 +64,39 @@ jobs:
       run: |
         source repository/src/config
         NOW=$(date +"%Y-%m-%d")
-        IMAGE=monsterpi-$DIST_VERSION-$NOW-nightly
+        VERSION=${DIST_VERSION}-${NOW}-nightly
+        IMAGE=monsterpi-$VERSION
 
         cp repository/src/workspace/*.img $IMAGE.img
 
-        echo "::set-output name=image::$IMAGE"
+        echo "tag=$VERSION" >> $GITHUB_OUTPUT
+        echo "image=$IMAGE" >> $GITHUB_OUTPUT
 
     - name: Zip Image
       if: github.event_name == 'schedule'
       run: |
         zip ${{ steps.copy.outputs.image }}.zip ${{ steps.copy.outputs.image }}.img
 
+    - name: Create release
+      uses: actions/create-release@v1
+      if: github.event_name == 'schedule'
+      id: create_release
+      with:
+        draft: ${{ github.ref_name == 'develop' }}
+        prerelease: ${{ contains(env.DIST_VERSION, 'rc') || contains(env.DIST_VERSION, 'unstable') }}
+        tag_name: ${{ steps.copy.outputs.version }}
+        release_name: MonsterPi ${{ steps.copy.outputs.image }}
+        body: "Release notes not added" # ${{ steps.build_changelog.outputs.changelog }}
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
+    - name: Upload server bundle zip
+      uses: actions/upload-release-asset@v1
+      if: github.event_name == 'schedule'
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ steps.copy.outputs.image }}.zip
+        asset_name: ${{ steps.copy.outputs.image }}.zip
+        asset_content_type: application/zip
