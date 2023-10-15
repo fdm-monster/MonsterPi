@@ -163,8 +163,7 @@ npm run uninstall
 # Step 5) Switch the latest FDM Monster to this tag
 echo "[5/${ts}] Downloading version version ${tag} of FDM Monster from Github"
 pushd "${server_path}"
-zip_file=${dist_prefix}-${tag}.zip
-curl -fsSL https://github.com/$org/$repo/releases/download/${tag}/${zip_file} -o "${dist_zips_path}/${zip_file}"
+curl -fsSL ${url} -o "${dist_zips_path}/${zip_file}"
 
 # Step 6) Clear the old dist folder
 echo "[6/${ts}] Clearing old dist folder"
