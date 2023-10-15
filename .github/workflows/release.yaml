@@ -73,9 +73,18 @@ jobs:
         echo "tag=$VERSION" >> $GITHUB_OUTPUT
         echo "image=$IMAGE" >> $GITHUB_OUTPUT
 
+    - name: Show size and version info
+      run: |
+        echo "Tag ${{steps.copy.outputs.tag}}"
+        echo "Version ${{steps.copy.outputs.version}}"
+        echo "File size of ${{ steps.copy.outputs.image }}.img"
+        stat --printf="%s" ${{ steps.copy.outputs.image }}.img"
+
     - name: Zip Image
       run: |
         zip ${{ steps.copy.outputs.image }}.zip ${{ steps.copy.outputs.image }}.img
+        echo "File size of ${{ steps.copy.outputs.image }}.zip"
+        stat --printf="%s" ${{ steps.copy.outputs.image }}.zip
 
     - name: Create release
       uses: actions/create-release@v1
