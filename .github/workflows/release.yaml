@@ -65,17 +65,25 @@ jobs:
       id: copy
       run: |
         source repository/src/config
-        VERSION=${DIST_VERSION}
+        TAG=${DIST_VERSION}
         IMAGE=monsterpi-$VERSION
 
         cp repository/src/workspace/*.img $IMAGE.img
 
-        echo "tag=$VERSION" >> $GITHUB_OUTPUT
+        echo "tag=$TAG" >> $GITHUB_OUTPUT
         echo "image=$IMAGE" >> $GITHUB_OUTPUT
+
+    - name: Show size and version info
+      run: |
+        echo "Tag ${{steps.copy.outputs.tag}}"
+        echo "File size of ${{ steps.copy.outputs.image }}.img"
+        stat --printf="%s" ${{ steps.copy.outputs.image }}.img
 
     - name: Zip Image
       run: |
         zip ${{ steps.copy.outputs.image }}.zip ${{ steps.copy.outputs.image }}.img
+        echo "File size of ${{ steps.copy.outputs.image }}.zip"
+        stat --printf="%s" ${{ steps.copy.outputs.image }}.zip
 
     - name: Create release
       uses: actions/create-release@v1
@@ -83,7 +91,7 @@ jobs:
       with:
         draft: ${{ github.ref_name == 'develop' }}
         prerelease: ${{ contains(env.DIST_VERSION, 'rc') || contains(env.DIST_VERSION, 'unstable') }}
-        tag_name: ${{ steps.copy.outputs.version }}
+        tag_name: ${{ steps.copy.outputs.tag }}
         release_name: MonsterPi ${{ steps.copy.outputs.image }}
         body: "Release notes not added" # ${{ steps.build_changelog.outputs.changelog }}
       env:
