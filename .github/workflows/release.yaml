@@ -77,13 +77,6 @@ jobs:
       run: |
         zip ${{ steps.copy.outputs.image }}.zip ${{ steps.copy.outputs.image }}.img
 
-    - name: Extract owner and repo
-      uses: jungwinter/split@v2.1.0
-      id: repo
-      with:
-       separator: '/'
-       msg: ${{ github.repository }}
-
     - name: Create release
       uses: actions/create-release@v1
       id: create_release
