@@ -4,20 +4,23 @@
  * Created by D. Zwart
  * Description: Performs all the steps to update FDM Monster
  * Last change: Update is running from the known server/daemon folders with push/popd
- * v2.0
- * 14th of October 2023
+ * v2.1
+ * 19th of October 2023
  */
 '
 
+# If you are logging in as pi user, you can skip the sudo su pi command.
+# I decided to switch to the pi user with sudo su pi beforehand as I was logging in as david.
+# Then I went to the folder /home/pi/fdm-monster-daemon/ with the command cd ~/fdm-monster-daemon.
+# Then I ran the script I made sudo ./update-fdm-monster.sh.
+
 # Default variable values
-verbose_mode=false
 
 # Function to display script usage
 usage() {
  echo "Usage: $0 [OPTIONS]"
  echo "Options:"
  echo " -h, --help              Display this help message"
- echo " -v, --verbose           Enable verbose mode"
  echo " -t, --tag               Specify a tag to install, required when using non-interactive mode"
  echo " -n, --non-interactive   Enable non-interactive mode"
 }
@@ -57,9 +60,6 @@ handle_options() {
         fi
         non_interactive_mode=true
         ;;
-      -v | --verbose)
-        verbose_mode=true
-        ;;
       *)
         echo "Invalid option: $1" >&2
         usage
@@ -74,9 +74,6 @@ handle_options() {
 handle_options "$@"
 
 # Perform the desired actions based on the provided flags and arguments
-if [ "$verbose_mode" = true ]; then
- echo "Verbose mode enabled."
-fi
 if [ "$non_interactive_mode" = true ]; then
  echo "Non-interactive mode enabled."
 fi
@@ -84,11 +81,6 @@ if [ -n "$tag" ]; then
  echo "Tag specified: $tag"
 fi
 
-
-# If you are logging in as pi user, you can skip the sudo su pi command.
-# I decided to switch to the pi user with sudo su pi beforehand as I was logging in as david.
-# Then I went to the folder /home/pi/fdm-monster-daemon/ with the command cd ~/fdm-monster-daemon.
-# Then I ran the script I made sudo ./update-fdm-monster.sh.
 
 # Step 0) Ensure we are root.
 set -e
@@ -109,7 +101,7 @@ dist_active_path="${rel_path}/fdm-monster/dist-active/"
 dist_prefix="dist-server"
 repo_url="https://github.com/${org}/${repo}"
 
-## Step 0) Path creation
+## Step 0c) Path creation
 echo "[1/${ts}] Ensuring folders are created"
 mkdir -p ${server_path}
 mkdir -p ${daemon_path}
