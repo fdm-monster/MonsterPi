@@ -90,7 +90,7 @@ jobs:
       id: create_release
       with:
         draft: ${{ github.ref_name == 'develop' }}
-        prerelease: ${{ contains(env.DIST_VERSION, 'rc') || contains(env.DIST_VERSION, 'unstable') }}
+        prerelease: ${{ contains(steps.copy.outputs.tag, 'rc') || contains(steps.copy.outputs.tag, 'unstable') }}
         tag_name: ${{ steps.copy.outputs.tag }}
         release_name: MonsterPi ${{ steps.copy.outputs.image }}
         body: "Release notes not added" # ${{ steps.build_changelog.outputs.changelog }}
