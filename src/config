@@ -1,5 +1,5 @@
 export DIST_NAME=MonsterPi
-export DIST_VERSION=0.3.2-rc1
+export DIST_VERSION=0.3.2-rc2
 
 export BASE_DISTRO=ubuntu
 export BASE_ARCH=aarch64
