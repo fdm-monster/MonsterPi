@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # start_chroot_script
-# This installs MongoDB as well as FDM Monster and HAProxy
+# This installs FDM Monster and HAProxy
 # Written by David Zwart
 # GPL V3
 ########
