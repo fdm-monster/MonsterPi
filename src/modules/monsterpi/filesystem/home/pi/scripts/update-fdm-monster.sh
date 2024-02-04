@@ -172,11 +172,12 @@ echo "[7b/${ts}] Extracting new dist zip to ${dist_active_path}"
 # Step 8) Ensure yarn is new, (optional)
 echo "[8/${ts}] Updating yarn"
 npm i -g yarn
+yarn set version berry
 
 # Step 9) Ensure the required packages are present with yarn (which is already installed, we're just keeping it fresh)
 echo "[9/${ts}] Updating the necessary modules of FDM Monster"
 pushd "${dist_active_path}"
-yarn install --production --pure-lockfile --network-timeout 1000000000
+YARN_HTTP_TIMEOUT=1000000 yarn workspaces focus --all --production
 popd
 
 # Step 10) Run the service
