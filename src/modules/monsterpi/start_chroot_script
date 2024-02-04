@@ -64,7 +64,6 @@ apt install -y nodejs
 
 # Enable yarn/pnpm/npm
 corepack enable
-npm install -g yarn
 
 pushd /home/"${BASE_USER}"
     # Install FDM Monster (this is really slow on QEMU!)

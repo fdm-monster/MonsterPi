@@ -171,7 +171,7 @@ echo "[7b/${ts}] Extracting new dist zip to ${dist_active_path}"
 
 # Step 8) Ensure yarn is new, (optional)
 echo "[8/${ts}] Updating yarn"
-npm i -g yarn
+npm i --global --force yarn
 yarn set version berry
 
 # Step 9) Ensure the required packages are present with yarn (which is already installed, we're just keeping it fresh)
