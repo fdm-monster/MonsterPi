@@ -17,6 +17,20 @@ const svc = new Service({
   script: join(rootPath, "dist/index.js"),
   nodeOptions: ["--harmony", "--max_old_space_size=4096"],
   workingDirectory: rootPath,
+  env: [
+    {
+      name: "ENABLE_EXPERIMENTAL_TYPEORM",
+      value: "true",
+    },
+    {
+      name: "DATABASE_PATH",
+      value: "./database",
+    },
+    {
+      name: "DATABASE_FILE",
+      value: "fdm-monster.sqlite",
+    },
+  ],
 });
 
 svc.on("install", function () {
