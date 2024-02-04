@@ -8,7 +8,7 @@ on:
 
 jobs:
   release:
-    if: startsWith(github.ref, 'refs/heads/release')
+    if: startsWith(github.ref, 'refs/heads/release-sqlite')
     runs-on: ubuntu-latest
     steps:
     - name: Install Dependencies
