@@ -45,7 +45,7 @@ else
 fi
 
 # Install GPG
-apt install -y gnupg
+# apt install -y gnupg
 
 # Install Node.js based on MONSTERPI_NODEJS_VERSION
 curl -sL https://deb.nodesource.com/setup_$MONSTERPI_NODEJS_VERSION | bash -
