@@ -1,10 +1,10 @@
 ---
 
-name: Release
+name: Release SQLite based
 on:
   push:
     branches:
-      - 'release/*'
+      - 'release-sqlite/*'
 
 jobs:
   release:
@@ -65,7 +65,7 @@ jobs:
       id: copy
       run: |
         source repository/src/config
-        TAG=${DIST_VERSION}
+        TAG=${DIST_VERSION}-sqlite
         IMAGE=monsterpi-$TAG
 
         cp repository/src/workspace/*.img $IMAGE.img
@@ -93,7 +93,7 @@ jobs:
         prerelease: ${{ contains(steps.copy.outputs.tag, 'rc') || contains(steps.copy.outputs.tag, 'unstable') }}
         tag_name: ${{ steps.copy.outputs.tag }}
         release_name: MonsterPi ${{ steps.copy.outputs.image }}
-        body: "FDM Monster based on MongoDB. Release notes not added" # ${{ steps.build_changelog.outputs.changelog }}
+        body: "MonsterPi based on SQLite. Release notes not added" # ${{ steps.build_changelog.outputs.changelog }}
       env:
         GITHUB_TOKEN: ${{ github.token }}
 
