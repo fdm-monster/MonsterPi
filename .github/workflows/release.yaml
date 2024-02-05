@@ -5,10 +5,11 @@ on:
   push:
     branches:
       - 'release/*'
+      - 'release-sqlite/*'
 
 jobs:
   release:
-    if: startsWith(github.ref, 'refs/heads/release-sqlite')
+    if: startsWith(github.ref, 'refs/heads/release')
     runs-on: ubuntu-latest
     steps:
     - name: Install Dependencies
@@ -93,7 +94,7 @@ jobs:
         prerelease: ${{ contains(steps.copy.outputs.tag, 'rc') || contains(steps.copy.outputs.tag, 'unstable') }}
         tag_name: ${{ steps.copy.outputs.tag }}
         release_name: MonsterPi ${{ steps.copy.outputs.image }}
-        body: "FDM Monster based on MongoDB. Release notes not added" # ${{ steps.build_changelog.outputs.changelog }}
+        body: "The MonsterPi image for running FDM Monster on Raspberry Pi. Release notes will be added manually." # ${{ steps.build_changelog.outputs.changelog }}
       env:
         GITHUB_TOKEN: ${{ github.token }}
 
