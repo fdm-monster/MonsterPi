@@ -57,7 +57,7 @@ sudo apt install -y mongodb-org=4.4.15 mongodb-org-server=4.4.15 mongodb-org-she
 systemctl enable mongod
 systemctl start mongod
 
-# Install NodeJS based on MONSTERPI_NODEJS_VERSION
+# Install Node.js based on MONSTERPI_NODEJS_VERSION
 curl -sL https://deb.nodesource.com/setup_$MONSTERPI_NODEJS_VERSION | bash -
 apt update
 apt install -y nodejs
