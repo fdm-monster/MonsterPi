@@ -177,13 +177,14 @@ pushd "${dist_active_path}"
   # https://github.com/fdm-monster/fdm-monster/issues/3143
   if [ -d ".yarn" ]; then
       echo "[8/${ts}] .yarn directory exists."
-
+      corepack enable
   else
       echo ".yarn directory does not exist."
       rm -f -- "yarnrc.yml"
+      export YARN_IGNORE_PATH=1
+      corepack enable
+      yarn set version latest
   fi
-
-  corepack enable
 
   # Step 9) Ensure the required packages are present with yarn (which is already installed, we're just keeping it fresh)
   echo "[9/${ts}] Updating the necessary modules of FDM Monster"
