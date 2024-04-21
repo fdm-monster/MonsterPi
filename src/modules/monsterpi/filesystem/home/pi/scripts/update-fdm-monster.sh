@@ -134,6 +134,10 @@ else
   fi
 fi
 
+# Step 2) Ensure yarn is enabled with corepack, test it quickly
+corepack enable
+yarn exec env
+
 # Step 3) Check zip asset url
 zip_file=${dist_prefix}-${tag}.zip
 url="https://github.com/$org/$repo/releases/download/${tag}/${zip_file}"
@@ -169,15 +173,16 @@ dpkg --verify p7zip-full || sudo apt-get install -y p7zip-full
 echo "[7b/${ts}] Extracting new dist zip to ${dist_active_path}"
 7z x "${dist_zips_path}/${zip_file}" -o"${dist_active_path}"
 
-# Step 8) Ensure yarn is new, (optional)
-echo "[8/${ts}] Updating yarn"
-npm i --global --force yarn
-yarn set version berry
-
-# Step 9) Ensure the required packages are present with yarn (which is already installed, we're just keeping it fresh)
-echo "[9/${ts}] Updating the necessary modules of FDM Monster"
 pushd "${dist_active_path}"
-YARN_HTTP_TIMEOUT=1000000 yarn workspaces focus --all --production
+  # Step 8) Ensure yarn is new, (optional)
+  echo "[8/${ts}] Updating yarn"
+  # npm i --global --force yarn
+  # yarn set version berry
+  yarn exec env
+
+  # Step 9) Ensure the required packages are present with yarn (which is already installed, we're just keeping it fresh)
+  echo "[9/${ts}] Updating the necessary modules of FDM Monster"
+  YARN_HTTP_TIMEOUT=1000000 yarn workspaces focus --all --production
 popd
 
 # Step 10) Run the service
