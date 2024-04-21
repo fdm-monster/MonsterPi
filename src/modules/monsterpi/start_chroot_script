@@ -52,10 +52,6 @@ curl -sL https://deb.nodesource.com/setup_$MONSTERPI_NODEJS_VERSION | bash -
 apt update
 apt install -y nodejs
 
-# Enable yarn/pnpm/npm
-corepack enable
-yarn exec env
-
 # Install FDM Monster (this is really slow on QEMU!)
 pushd /home/"${BASE_USER}"
     cd /home/"${BASE_USER}"/scripts/
