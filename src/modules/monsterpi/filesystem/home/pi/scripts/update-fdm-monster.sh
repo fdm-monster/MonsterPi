@@ -169,15 +169,26 @@ dpkg --verify p7zip-full || sudo apt-get install -y p7zip-full
 echo "[7b/${ts}] Extracting new dist zip to ${dist_active_path}"
 7z x "${dist_zips_path}/${zip_file}" -o"${dist_active_path}"
 
-# Step 8) Ensure yarn is new, (optional)
-echo "[8/${ts}] Updating yarn"
-npm i --global --force yarn
-yarn set version berry
-
-# Step 9) Ensure the required packages are present with yarn (which is already installed, we're just keeping it fresh)
-echo "[9/${ts}] Updating the necessary modules of FDM Monster"
 pushd "${dist_active_path}"
-YARN_HTTP_TIMEOUT=1000000 yarn workspaces focus --all --production
+  # Step 8) Ensure yarn is new, (optional)
+  echo "[8/${ts}] Ensure .yarn and yarnrc.yml are in correct state, enable corepack and set to using yarn v4+"
+
+  # Until the fix in this issue is released, we need a small hack
+  # https://github.com/fdm-monster/fdm-monster/issues/3143
+  if [ -d ".yarn" ]; then
+      echo "[8/${ts}] .yarn directory exists."
+      corepack enable
+  else
+      echo ".yarn directory does not exist."
+      rm -f -- "yarnrc.yml"
+      export YARN_IGNORE_PATH=1
+      corepack enable
+      yarn set version latest
+  fi
+
+  # Step 9) Ensure the required packages are present with yarn (which is already installed, we're just keeping it fresh)
+  echo "[9/${ts}] Updating the necessary modules of FDM Monster"
+  YARN_HTTP_TIMEOUT=1000000 yarn workspaces focus --all --production
 popd
 
 # Step 10) Run the service
