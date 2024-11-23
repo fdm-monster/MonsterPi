@@ -1,5 +1,5 @@
 export DIST_NAME=MonsterPi
-export DIST_VERSION=0.4.5-sqlite
+export DIST_VERSION=0.4.6-sqlite
 export BASE_DISTRO=ubuntu
 export BASE_ARCH=aarch64
 # This does not work without $BASE_IMAGE_PATH
