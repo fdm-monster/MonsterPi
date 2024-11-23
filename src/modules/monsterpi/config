@@ -1,9 +1,6 @@
 ###############################################################################
 # All our config settings must start with MONSTERPI_
 
-# MongoDB
-[ -n "$MONSTERPI_MONGODB_VERSION" ] || MONSTERPI_MONGODB_VERSION=4.4
-
 # Node.js
 [ -n "$MONSTERPI_NODEJS_VERSION" ] || MONSTERPI_NODEJS_VERSION=20.x
 
