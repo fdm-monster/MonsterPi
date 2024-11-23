@@ -2,6 +2,7 @@ name: Release
 on:
   push:
     branches:
+      - "release/*"
       - "release-sqlite/*"
 
 jobs:
