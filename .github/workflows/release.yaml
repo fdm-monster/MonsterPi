@@ -2,7 +2,6 @@ name: Release
 on:
   push:
     branches:
-      - "release/*"
       - "release-sqlite/*"
 
 jobs:
@@ -43,10 +42,7 @@ jobs:
         id: determine_tag
         run: |
           BRANCH_NAME="${GITHUB_REF#refs/heads/}"
-          TAG="${{ steps.gitversion.outputs.majorMinorPatch }}"
-          if [[ "$BRANCH_NAME" == release-sqlite/* ]]; then
-            TAG="${TAG}-sqlite"
-          fi
+          TAG="${{ steps.gitversion.outputs.majorMinorPatch }}-sqlite"
           echo "tag=$TAG" >> $GITHUB_OUTPUT
 
       - name: Download Raspbian Image
