@@ -32,12 +32,12 @@ jobs:
         fetch-depth: 0
 
     - name: Install GitVersion
-      uses: gittools/actions/gitversion/setup@v3.0.3
+      uses: gittools/actions/gitversion/setup@v3.0.4
       with:
         versionSpec: '5.x'
 
     - name: Use GitVersion
-      uses: gittools/actions/gitversion/execute@v3.0.3
+      uses: gittools/actions/gitversion/execute@v3.0.4
       id: gitversion
       with:
         targetPath: repository
