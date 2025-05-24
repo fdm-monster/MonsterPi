@@ -1,35 +1,31 @@
----
-
 name: Release
 on:
   push:
     branches:
-      - 'release/*'
-      - 'release-sqlite/*'
+      - "release/*"
 
 jobs:
   release:
-    if: startsWith(github.ref, 'refs/heads/release')
     runs-on: ubuntu-latest
     steps:
-    - name: Install Dependencies
-      run: |
-        sudo apt update
-        sudo apt install coreutils p7zip-full qemu-user-static
+      - name: Install Dependencies
+        run: |
+          sudo apt update
+          sudo apt install coreutils p7zip-full qemu-user-static
 
-    - name: Checkout CustomPiOS
-      uses: actions/checkout@v4.2.2
-      with:
-        repository: 'guysoft/CustomPiOS'
-        path: CustomPiOS
-        ref: "baaa155f33f54fa0e777039dd47cca751fa55802"
+      - name: Checkout CustomPiOS
+        uses: actions/checkout@v4.2.2
+        with:
+          repository: "guysoft/CustomPiOS"
+          path: CustomPiOS
+          ref: "baaa155f33f54fa0e777039dd47cca751fa55802"
 
-    - name: Checkout Project Repository
-      uses: actions/checkout@v4.2.2
-      with:
-        path: repository
-        submodules: true
-        fetch-depth: 0
+      - name: Checkout Project Repository
+        uses: actions/checkout@v4.2.2
+        with:
+          path: repository
+          submodules: true
+          fetch-depth: 0
 
     - name: Install GitVersion
       uses: gittools/actions/gitversion/setup@v3.2.1
@@ -42,69 +38,76 @@ jobs:
       with:
         targetPath: repository
 
-    - name: Download Raspbian Image
-      run: |
-        cd repository/src/image
-        wget -c --trust-server-names 'https://cdimage.ubuntu.com/releases/20.04/release/ubuntu-20.04.5-preinstalled-server-arm64+raspi.img.xz'
+      - name: Determine Release Tag
+        id: determine_tag
+        run: |
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
+          TAG="${{ steps.gitversion.outputs.majorMinorPatch }}-sqlite"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
 
-    - name: Update CustomPiOS Paths
-      run: |
-        cd repository/src
-        ../../CustomPiOS/src/update-custompios-paths
+      - name: Download Raspbian Image
+        run: |
+          cd repository/src/image
+          wget -c --trust-server-names 'https://cdimage.ubuntu.com/releases/20.04/release/ubuntu-20.04.5-preinstalled-server-arm64+raspi.img.xz'
 
-    - name: Set release image version
-      run: |
-        source repository/src/config
-        echo "DIST_VERSION=${{ steps.gitversion.outputs.majorMinorPatch }}" > repository/src/config.local
+      - name: Update CustomPiOS Paths
+        run: |
+          cd repository/src
+          ../../CustomPiOS/src/update-custompios-paths
 
-    - name: Build Image
-      run: |
-        sudo modprobe loop
-        cd repository/src
-        sudo bash -x ./build_dist
+      - name: Set release image version
+        run: |
+          source repository/src/config
+          echo "DIST_VERSION=${{ steps.determine_tag.outputs.tag }}" > repository/src/config.local
 
-    - name: Copy output
-      id: copy
-      run: |
-        source repository/src/config
-        TAG=${DIST_VERSION}
-        IMAGE=monsterpi-$TAG
+      - name: Build Image
+        run: |
+          sudo modprobe loop
+          cd repository/src
+          sudo bash -x ./build_dist
 
-        cp repository/src/workspace/*.img $IMAGE.img
+      - name: Copy output
+        id: copy
+        run: |
+          source repository/src/config
+          TAG=${{ steps.determine_tag.outputs.tag }}
+          IMAGE=monsterpi-$TAG
 
-        echo "tag=$TAG" >> $GITHUB_OUTPUT
-        echo "image=$IMAGE" >> $GITHUB_OUTPUT
+          cp repository/src/workspace/*.img $IMAGE.img
 
-    - name: Show size and version info
-      run: |
-        echo "Tag ${{steps.copy.outputs.tag}}"
-        echo "File size of ${{ steps.copy.outputs.image }}.img"
-        stat --printf="%s" ${{ steps.copy.outputs.image }}.img
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "image=$IMAGE" >> $GITHUB_OUTPUT
 
-    - name: Zip Image
-      run: |
-        zip ${{ steps.copy.outputs.image }}.zip ${{ steps.copy.outputs.image }}.img
-        echo "File size of ${{ steps.copy.outputs.image }}.zip"
-        stat --printf="%s" ${{ steps.copy.outputs.image }}.zip
+      - name: Show size and version info
+        run: |
+          echo "Tag ${{steps.copy.outputs.tag}}"
+          echo "File size of ${{ steps.copy.outputs.image }}.img"
+          stat --printf="%s" ${{ steps.copy.outputs.image }}.img
 
-    - name: Create release
-      uses: actions/create-release@v1
-      id: create_release
-      with:
-        draft: ${{ github.ref_name == 'develop' }}
-        prerelease: ${{ contains(steps.copy.outputs.tag, 'rc') || contains(steps.copy.outputs.tag, 'unstable') }}
-        tag_name: ${{ steps.copy.outputs.tag }}
-        release_name: MonsterPi ${{ steps.copy.outputs.image }}
-        body: "The MonsterPi image for running FDM Monster on Raspberry Pi. Release notes will be added manually." # ${{ steps.build_changelog.outputs.changelog }}
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
+      - name: Zip Image
+        run: |
+          zip ${{ steps.copy.outputs.image }}.zip ${{ steps.copy.outputs.image }}.img
+          echo "File size of ${{ steps.copy.outputs.image }}.zip"
+          stat --printf="%s" ${{ steps.copy.outputs.image }}.zip
 
-    - name: Upload server bundle zip
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ steps.copy.outputs.image }}.zip
-        asset_name: ${{ steps.copy.outputs.image }}.zip
-        asset_content_type: application/zip
+      - name: Create release
+        uses: actions/create-release@v1
+        id: create_release
+        with:
+          draft: false
+          prerelease: ${{ contains(steps.copy.outputs.tag, 'rc') || contains(steps.copy.outputs.tag, 'unstable') }}
+          tag_name: ${{ steps.copy.outputs.tag }}
+          release_name: MonsterPi ${{ steps.copy.outputs.image }}
+          body: "The MonsterPi image for running FDM Monster on Raspberry Pi. Release notes will be added manually." # ${{ steps.build_changelog.outputs.changelog }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Upload server bundle zip
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ steps.copy.outputs.image }}.zip
+          asset_name: ${{ steps.copy.outputs.image }}.zip
+          asset_content_type: application/zip
