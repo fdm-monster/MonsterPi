@@ -6,10 +6,19 @@
  */
 
 const { Service } = require("node-linux");
-const { join } = require("path");
+const { join } = require("node:path");
+const { existsSync, mkdirSync } = require("node:fs");
 
 // Create a new service object
 const rootPath = join(__dirname, "../fdm-monster/dist-active");
+const dataPath = join(__dirname, "../fdm-monster-data");
+if (!existsSync(rootPath)) {
+  mkdirSync(rootPath, { recursive: true });
+}
+if (!existsSync(dataPath)) {
+  mkdirSync(dataPath, { recursive: true });
+}
+
 const svc = new Service({
   name: "FDM Monster",
   description:
@@ -17,6 +26,20 @@ const svc = new Service({
   script: join(rootPath, "dist/index.js"),
   nodeOptions: ["--harmony", "--max_old_space_size=4096"],
   workingDirectory: rootPath,
+  env: [
+    {
+      name: "ENV_FILE",
+      value: join(dataPath, ".env"),
+    },
+    {
+      name: "MEDIA_PATH",
+      value: join(dataPath, "./media"),
+    },
+    {
+      name: "DATABASE_PATH",
+      value: join(dataPath, "./database"),
+    }
+  ],
 });
 
 svc.on("install", function () {

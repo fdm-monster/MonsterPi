@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # start_chroot_script
-# This installs MongoDB as well as FDM Monster and HAProxy
+# This installs FDM Monster and HAProxy
 # Written by David Zwart
 # GPL V3
 ########
@@ -44,9 +44,6 @@ else
     apt-get -y install jq git screen libffi-dev libssl-dev libatlas3-base ca-certificates p7zip-full
 fi
 
-# Install GPG
-apt install -y gnupg
-
 # Install Node.js based on MONSTERPI_NODEJS_VERSION
 curl -sL https://deb.nodesource.com/setup_$MONSTERPI_NODEJS_VERSION | bash -
 apt update
@@ -67,16 +64,6 @@ pushd /home/"${BASE_USER}"
         rm /etc/ssl/private/ssl-cert-snakeoil.key /etc/ssl/certs/ssl-cert-snakeoil.pem
     fi
 popd
-
-# Add MongoDB as trusted source list
-wget -qO - https://www.mongodb.org/static/pgp/server-"$MONSTERPI_MONGODB_VERSION".asc | sudo apt-key add -
-echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/`cat /etc/os-release | grep "^ID=" | cut -d "=" -f2` `cat /etc/os-release | grep "^VERSION_CODENAME=" | cut -d "=" -f2`/mongodb-org/$MONSTERPI_MONGODB_VERSION multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-$MONSTERPI_MONGODB_VERSION.list
-apt update
-
-# Install MongoDB
-sudo apt install -y mongodb-org=4.4.15 mongodb-org-server=4.4.15 mongodb-org-shell=4.4.15 mongodb-org-mongos=4.4.15 mongodb-org-tools=4.4.15
-systemctl enable mongod
-systemctl start mongod
 
 # add some "How To" info to boot output
 # Note, this code is also in /filesystem/home/pi/scripts/
