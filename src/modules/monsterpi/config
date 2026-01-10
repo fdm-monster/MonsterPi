@@ -1,14 +1,11 @@
 ###############################################################################
 # All our config settings must start with MONSTERPI_
 
-# MongoDB
-[ -n "$MONSTERPI_MONGODB_VERSION" ] || MONSTERPI_MONGODB_VERSION=4.4
-
 # Node.js
-[ -n "$MONSTERPI_NODEJS_VERSION" ] || MONSTERPI_NODEJS_VERSION=20.x
+[ -n "$MONSTERPI_NODEJS_VERSION" ] || MONSTERPI_NODEJS_VERSION=24.x
 
 # HAProxy
 [ -n "$MONSTERPI_INCLUDE_HAPROXY" ] || MONSTERPI_INCLUDE_HAPROXY=yes
 
 # FDM Monster version
-[ -n "$MONSTERPI_FDMMONSTER_VERSION" ] || MONSTERPI_FDMMONSTER_VERSION=1.9.0
+[ -n "$MONSTERPI_FDMMONSTER_VERSION" ] || MONSTERPI_FDMMONSTER_VERSION=2.0.3

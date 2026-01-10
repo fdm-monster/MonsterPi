@@ -5,7 +5,6 @@ on:
   push:
     branches:
       - 'release/*'
-      - 'release-sqlite/*'
 
 jobs:
   release:
@@ -91,7 +90,7 @@ jobs:
       uses: actions/create-release@v1
       id: create_release
       with:
-        draft: ${{ github.ref_name == 'develop' }}
+        draft: false
         prerelease: ${{ contains(steps.copy.outputs.tag, 'rc') || contains(steps.copy.outputs.tag, 'unstable') }}
         tag_name: ${{ steps.copy.outputs.tag }}
         release_name: MonsterPi ${{ steps.copy.outputs.image }}
