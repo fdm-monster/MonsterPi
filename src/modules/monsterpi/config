@@ -1,11 +1,11 @@
 ###############################################################################
 # All our config settings must start with MONSTERPI_
 
-# Node.js
-[ -n "$MONSTERPI_NODEJS_VERSION" ] || MONSTERPI_NODEJS_VERSION=24.x
+# Node.js version (used for FDMM_NODE_VERSION)
+[ -n "$MONSTERPI_NODEJS_VERSION" ] || MONSTERPI_NODEJS_VERSION=24.12.0
 
 # HAProxy
 [ -n "$MONSTERPI_INCLUDE_HAPROXY" ] || MONSTERPI_INCLUDE_HAPROXY=yes
 
-# FDM Monster version
+# FDM Monster version (used for FDMM_NPM_PACKAGE)
 [ -n "$MONSTERPI_FDMMONSTER_VERSION" ] || MONSTERPI_FDMMONSTER_VERSION=2.0.3
