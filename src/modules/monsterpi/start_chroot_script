@@ -62,7 +62,7 @@ export FDMM_SERVER_PORT="${fdmm_server_port}"
 
 # Run the installer as the BASE_USER (install.sh prevents running as root)
 echo "Installing FDM Monster using official CLI..."
-sudo -u "${BASE_USER}" -E bash "${installer_path}" install
+bash "${installer_path}" install
 
 # Clean up the installer
 rm -f "${installer_path}"
