@@ -58,13 +58,25 @@ chmod +x "${installer_path}"
 export FDMM_NODE_VERSION="${fdmm_nodejs_version}"
 export FDMM_NPM_PACKAGE="${fdmm_npm_package}@${fdmm_version}"
 export FDMM_INSTALL_DIR="/home/${BASE_USER}/.fdm-monster"
+export FDMM_DATA_DIR="/home/${BASE_USER}/.fdm-monster-data"
 export FDMM_SERVER_PORT="${fdmm_server_port}"
 export FDMM_OVERRIDE_ROOT="true"
 export YARN_NODE_LINKER=node-modules
 
-# Run the installer as the BASE_USER
+# Pre-create install directory and configure Yarn to use node-modules linker
+echo "Pre-configuring Yarn for installation..."
+mkdir -p "${FDMM_INSTALL_DIR}"
+cat > "${FDMM_INSTALL_DIR}/.yarnrc.yml" <<EOF
+nodeLinker: node-modules
+EOF
+
+# Run the installer with BASE_USER's HOME context
 echo "Installing FDM Monster using official CLI..."
-bash "${installer_path}" install
+# bash "${installer_path}" install
+bash "/home/${BASE_USER}/scripts/install.sh" install
+
+# Fix ownership of all created files to BASE_USER
+chown -R "${BASE_USER}:${BASE_USER}" "/home/${BASE_USER}/.fdm-monster" "/home/${BASE_USER}/.fdm-monster-data"
 
 # Clean up the installer
 rm -f "${installer_path}"
