@@ -60,6 +60,7 @@ export FDMM_NPM_PACKAGE="${fdmm_npm_package}@${fdmm_version}"
 export FDMM_INSTALL_DIR="/home/${BASE_USER}/.fdm-monster"
 export FDMM_SERVER_PORT="${fdmm_server_port}"
 export FDMM_OVERRIDE_ROOT="true"
+export YARN_NODE_LINKER=node-modules
 
 # Run the installer as the BASE_USER
 echo "Installing FDM Monster using official CLI..."
