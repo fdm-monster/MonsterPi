@@ -56,7 +56,8 @@ chmod +x "${installer_path}"
 
 # Set environment variables for FDM Monster CLI configuration
 export FDMM_NODE_VERSION="${fdmm_nodejs_version}"
-export FDMM_NPM_PACKAGE="${fdmm_npm_package}@${fdmm_version}"
+export FDMM_NPM_PACKAGE="${fdmm_npm_package}"
+export FDMM_NPM_PACKAGE_VERSION="${fdmm_version}"
 export FDMM_INSTALL_DIR="/home/${BASE_USER}/.fdm-monster"
 export FDMM_DATA_DIR="/home/${BASE_USER}/.fdm-monster-data"
 export FDMM_SERVER_PORT="${fdmm_server_port}"

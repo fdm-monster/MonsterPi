@@ -7,16 +7,18 @@
 # ============================================================================
 # The following environment variables can be used to customize installation:
 #
-# FDMM_NODE_VERSION      - Node.js version to install (default: 24.12.0)
-# FDMM_NPM_PACKAGE       - NPM package to install (default: @fdm-monster/server)
-# FDMM_SERVER_PORT       - Server port (default: 4000)
-# FDMM_INSTALL_DIR       - Installation directory (default: $HOME/.fdm-monster)
-# FDMM_DATA_DIR          - Data directory (default $HOME/.fdm-monster-data)
-# FDMM_INSTALL_URL       - Installer script URL (default: GitHub main branch)
-# FDMM_OVERRIDE_ROOT     - Allow running as root (default: false, set to 'true' to override)
+# FDMM_NODE_VERSION         - Node.js version to install (default: 24.12.0)
+# FDMM_NPM_PACKAGE          - NPM package to install (default: @fdm-monster/server)
+# FDMM_NPM_PACKAGE_VERSION  - NPM package version to install (default: latest)
+# FDMM_SERVER_PORT          - Server port (default: 4000)
+# FDMM_INSTALL_DIR          - Installation directory (default: $HOME/.fdm-monster)
+# FDMM_DATA_DIR             - Data directory (default $HOME/.fdm-monster-data)
+# FDMM_INSTALL_URL          - Installer script URL (default: GitHub main branch)
+# FDMM_OVERRIDE_ROOT        - Allow running as root (default: false, set to 'true' to override)
 #
 # Example:
 #   FDMM_NODE_VERSION="22.11.0" FDMM_SERVER_PORT="3000" bash install.sh
+#   FDMM_NPM_PACKAGE_VERSION="2.0.3" bash install.sh
 #   FDMM_OVERRIDE_ROOT=true bash install.sh
 # ============================================================================
 
@@ -33,6 +35,7 @@ readonly CLI_VERSION="1.0.10"
 # Configuration (see ENVIRONMENT VARIABLE OVERRIDES section above)
 NODE_VERSION="${FDMM_NODE_VERSION:-24.12.0}"
 NPM_PACKAGE="${FDMM_NPM_PACKAGE:-@fdm-monster/server}"
+NPM_PACKAGE_VERSION="${FDMM_NPM_PACKAGE_VERSION:-}"
 INSTALL_DIR="${FDMM_INSTALL_DIR:-$HOME/.fdm-monster}"
 DEFAULT_PORT="${FDMM_SERVER_PORT:-4000}"
 DATA_DIR="${FDMM_DATA_DIR:-$HOME/.fdm-monster-data}"
@@ -268,7 +271,14 @@ setup_yarn() {
 }
 
 install_fdm_monster() {
-    print_info "Installing $NPM_PACKAGE..."
+    # Build the package specifier for installation
+    local PKG_SPEC="$NPM_PACKAGE"
+    if [[ -n "$NPM_PACKAGE_VERSION" ]]; then
+        PKG_SPEC="${NPM_PACKAGE}@${NPM_PACKAGE_VERSION}"
+        print_info "Installing $NPM_PACKAGE version $NPM_PACKAGE_VERSION..."
+    else
+        print_info "Installing $NPM_PACKAGE..."
+    fi
 
     mkdir -p "$INSTALL_DIR" "$DATA_DIR/media" "$DATA_DIR/database"
     cd "$INSTALL_DIR"
@@ -285,8 +295,8 @@ EOF
     fi
 
     # Install the package
-    if ! YARN_NODE_LINKER=node-modules yarn add "$NPM_PACKAGE"; then
-        print_error "Failed to install $NPM_PACKAGE"
+    if ! YARN_NODE_LINKER=node-modules yarn add "$PKG_SPEC"; then
+        print_error "Failed to install $PKG_SPEC"
         exit 1
     fi
 
