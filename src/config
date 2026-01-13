@@ -1,5 +1,5 @@
 export DIST_NAME=MonsterPi
-export DIST_VERSION=1.0.0-rc1
+export DIST_VERSION=1.0.0-rc2
 export BASE_DISTRO=ubuntu
 export BASE_ARCH=aarch64
 # This does not work without $BASE_IMAGE_PATH
