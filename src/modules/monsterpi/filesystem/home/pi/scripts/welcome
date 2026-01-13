@@ -1,8 +1,11 @@
 #!/bin/bash
 
+# FDM Monster installation directory (set during build)
+_FDMM_INSTALL_DIR="__FDMM_INSTALL_DIR__"
+
 _NAME=$(hostname)
 _IP=$(hostname -I)
-_FDM_MONSTER_VERSION=$(jq -r .version ~/fdm-monster/dist-active/package.json || echo "unknown")
+_FDM_MONSTER_VERSION=$(jq -r .version "${_FDMM_INSTALL_DIR}/node_modules/@fdm-monster/server/package.json" 2>/dev/null || echo "unknown")
 _MONSTERPI_VERSION=$(cat /etc/monsterpi_version || echo "unknown")
 
 echo
@@ -30,5 +33,21 @@ echo
 echo "------------------------------------------------------------------------------"
 echo "FDM Monster version : $_FDM_MONSTER_VERSION"
 echo "MonsterPi version   : $_MONSTERPI_VERSION"
+echo "------------------------------------------------------------------------------"
+echo
+echo "Useful fdmm CLI commands:"
+echo "  fdmm install                              # (Re)install FDM Monster"
+echo "  fdmm start                                # Start the service"
+echo "  fdmm stop                                 # Stop the service"
+echo "  fdmm restart                              # Restart the service"
+echo "  fdmm status                               # Check status"
+echo "  fdmm logs                                 # Stream service logs"
+echo "  fdmm backup                               # Create backup"
+echo "  fdmm upgrade                              # Upgrade to latest"
+echo "  fdmm upgrade x.y.z                        # Upgrade to specific version"
+echo "  fdmm update-cli                           # Update CLI tool from default URL"
+echo "  fdmm update-cli https://example.com/cli   # Update CLI from custom URL"
+echo "  fdmm version                              # Show CLI version"
+echo "  fdmm uninstall                            # Remove installation"
 echo "------------------------------------------------------------------------------"
 echo
