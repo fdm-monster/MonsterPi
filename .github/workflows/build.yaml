@@ -38,7 +38,7 @@ jobs:
 
     - name: Download RaspberryPiOS Image
       run: |
-        cd repository/src/image
+        cd repository/src/image-raspberrypiarm64
         wget -c --trust-server-names 'https://downloads.raspberrypi.org/raspios_lite_armhf_latest'
 
     - name: Update CustomPiOS Paths
