@@ -32,7 +32,7 @@ jobs:
 
     - name: Install CustomPiOS Requirements
       run: |
-        pip3 install -r CustomPiOS/requirements.txt
+        pip3 install -r CustomPiOS/src/requirements.txt
 
     - name: Checkout Project Repository
       uses: actions/checkout@v6.0.1
