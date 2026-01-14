@@ -38,49 +38,23 @@ else
     apt-get -y install jq git screen libffi-dev libssl-dev libatlas3-base ca-certificates curl
 fi
 
-# Validate FDM Monster NPM Package Version
-echo "Validating FDM Monster version ${fdmm_version}..."
-npm_package_url="https://registry.npmjs.org/${fdmm_npm_package}/${fdmm_version}"
-if ! curl --fail --silent --head "${npm_package_url}" > /dev/null 2>&1; then
-    echo "ERROR: NPM package ${fdmm_npm_package}@${fdmm_version} does not exist!"
-    echo "Please check the version in config file and try again."
-    exit 1
-fi
-echo "NPM package ${fdmm_npm_package}@${fdmm_version} validated successfully."
-
-# Install FDM Monster using official CLI
-# Download the official FDM Monster install script LIVE from GitHub
 echo "Downloading FDM Monster installer from GitHub..."
 curl -fsSL "${installer_url}" -o "${installer_path}"
-chmod +x "${installer_path}"
 
-# Set environment variables for FDM Monster CLI configuration
-export FDMM_NODE_VERSION="${fdmm_nodejs_version}"
-export FDMM_NPM_PACKAGE="${fdmm_npm_package}"
-export FDMM_NPM_PACKAGE_VERSION="${fdmm_version}"
-export FDMM_HOME="/home/${BASE_USER}"
-export FDMM_INSTALL_DIR="/home/${BASE_USER}/.fdm-monster"
-export FDMM_DATA_DIR="/home/${BASE_USER}/.fdm-monster-data"
-export FDMM_SERVER_PORT="${fdmm_server_port}"
-export FDMM_OVERRIDE_ROOT="true"
-export YARN_NODE_LINKER=node-modules
+# Install FDM Monster using local installer script (provides nice CLI)
+# Run as pi user so all caches (.yarn, .cache) are created in correct location
+# Script uses sudo internally when needed (service file creation)
+echo "Installing FDM Monster ${fdmm_version} with local installer..."
 
-# Pre-create install directory and configure Yarn to use node-modules linker
-echo "Pre-configuring Yarn for installation..."
-mkdir -p "${FDMM_INSTALL_DIR}"
-cat > "${FDMM_INSTALL_DIR}/.yarnrc.yml" <<EOF
-nodeLinker: node-modules
-EOF
-
-# Run the installer with BASE_USER's HOME context
-echo "Installing FDM Monster using official CLI..."
-bash "${installer_path}" install
-
-# Fix ownership of all created files to BASE_USER
-chown -R "${BASE_USER}:${BASE_USER}" "/home/${BASE_USER}/.fdm-monster" "/home/${BASE_USER}/.fdm-monster-data"
-
-# Clean up the installer
-rm -f "${installer_path}"
+sudo -u "${BASE_USER}" \
+    FDMM_NODE_VERSION="${fdmm_nodejs_version}" \
+    FDMM_NPM_PACKAGE="${fdmm_npm_package}" \
+    FDMM_NPM_PACKAGE_VERSION="${fdmm_version}" \
+    FDMM_HOME="/home/${BASE_USER}" \
+    FDMM_INSTALL_DIR="/home/${BASE_USER}/.fdm-monster" \
+    FDMM_DATA_DIR="/home/${BASE_USER}/.fdm-monster-data" \
+    FDMM_SERVER_PORT="${fdmm_server_port}" \
+    bash "${installer_path}/install.sh" install
 
 # Setup HAProxy and SSL
 if [ "$MONSTERPI_INCLUDE_HAPROXY" == "yes" ]
