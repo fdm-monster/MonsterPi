@@ -21,7 +21,11 @@ jobs:
       with:
         repository: 'guysoft/CustomPiOS'
         path: CustomPiOS
-        ref: "baaa155f33f54fa0e777039dd47cca751fa55802"
+        ref: "79b77a4c1a34ef551ab09e9bd84710d048b65e55"
+    
+    - name: Install CustomPiOS Requirements
+      run: |
+        pip3 install -r CustomPiOS/requirements.txt        
 
     - name: Checkout Project Repository
       uses: actions/checkout@v6.0.1
