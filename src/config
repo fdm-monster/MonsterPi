@@ -4,7 +4,7 @@ export MODULES="base(network, disable-services(monsterpi), password-for-sudo)"
 
 export BASE_DISTRO=raspberrypios
 export BASE_ARCH=aarch64
-export BASE_BOARD=raspberrypiarm64
+# BASE_BOARD not needed - CustomPiOS will auto-detect from the image filename
 export BASE_IGNORE_VARIANT_NAME=yes
 
 # rpi-imager json generator settings
