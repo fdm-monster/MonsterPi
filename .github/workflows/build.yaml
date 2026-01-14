@@ -6,7 +6,7 @@ on:
   pull_request:
   push:
     branches:
-      - '**'
+      - 'main'
       - '!release/*'
     paths:
       - 'src/*'
@@ -32,7 +32,7 @@ jobs:
 
     - name: Install CustomPiOS Requirements
       run: |
-        pip3 install -r CustomPiOS/src/requirements.txt
+        sudo pip3 install -r CustomPiOS/src/requirements.txt
 
     - name: Checkout Project Repository
       uses: actions/checkout@v6.0.1
@@ -40,8 +40,7 @@ jobs:
         path: repository
         submodules: true
 
-    # wget -c --trust-server-names 'https://cdimage.ubuntu.com/releases/22.04/release/ubuntu-22.04.2-preinstalled-server-arm64+raspi.img.xz'
-    - name: Download Raspbian or Ubuntu Image
+    - name: Download RaspberryPiOS Image
       run: |
         cd repository/src/image
         wget -c --trust-server-names 'https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2025-12-04/2025-12-04-raspios-trixie-arm64-lite.img.xz'
