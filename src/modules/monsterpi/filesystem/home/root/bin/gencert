@@ -6,6 +6,6 @@ certfile=/etc/ssl/snakeoil.pem
 
 if [ ! -f $keyfile ] || [ ! -s $keyfile ] || [ ! -f $pemfile ] || [ ! -s $pemfile ] || [ ! -f $certfile ] || [ ! -s $certfile ]; then
   echo "Generating SSL certificate"
-  sudo make-ssl-cert generate-default-snakeoil --force-overwrite
-  sudo cat $keyfile $pemfile > $certfile
+  make-ssl-cert generate-default-snakeoil --force-overwrite
+  cat $keyfile $pemfile > $certfile
 fi

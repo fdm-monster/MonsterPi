@@ -88,6 +88,7 @@ then
     echo "Setting up HAProxy for HTTP and HTTPS..."
     apt -y install ssl-cert haproxy
     rm /etc/ssl/private/ssl-cert-snakeoil.key /etc/ssl/certs/ssl-cert-snakeoil.pem
+    chmod +x /root/bin/gencert
 fi
 
 # Configure Boot Messages
