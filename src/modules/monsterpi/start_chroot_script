@@ -54,7 +54,10 @@ sudo -u "${BASE_USER}" \
     FDMM_INSTALL_DIR="/home/${BASE_USER}/.fdm-monster" \
     FDMM_DATA_DIR="/home/${BASE_USER}/.fdm-monster-data" \
     FDMM_SERVER_PORT="${fdmm_server_port}" \
-    bash "${installer_path}/install.sh" install
+    bash "${installer_path}" install
+
+# Clean up the installer script
+rm -f "${installer_path}"    
 
 # Setup HAProxy and SSL
 if [ "$MONSTERPI_INCLUDE_HAPROXY" == "yes" ]
