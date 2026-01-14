@@ -16,5 +16,5 @@ export RPI_IMAGER_ICON="https://github.com/fdm-monster/fdm-monster/blob/ba18cb70
 export BASE_IMAGE_ENLARGEROOT=1500
 export BASE_IMAGE_RESIZEROOT=250
 
-export MODULES="base(network, disable-services(monsterpi), password-for-sudo)"
+export MODULES="base(network, disable-services(monsterpi))"
 
