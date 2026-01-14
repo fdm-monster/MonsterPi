@@ -6,7 +6,7 @@ on:
   pull_request:
   push:
     branches:
-      - '**'
+      - 'main'
       - '!release/*'
     paths:
       - 'src/*'
@@ -21,14 +21,14 @@ jobs:
     - name: Install Dependencies
       run: |
         sudo apt update
-        sudo apt install coreutils p7zip-full qemu-user-static
+        sudo apt install coreutils p7zip-full qemu-user-static python3-git
 
     - name: Checkout CustomPiOS
       uses: actions/checkout@v6.0.1
       with:
         repository: 'guysoft/CustomPiOS'
         path: CustomPiOS
-        ref: "baaa155f33f54fa0e777039dd47cca751fa55802"
+        # ref: "79b77a4c1a34ef551ab09e9bd84710d048b65e55"
 
     - name: Checkout Project Repository
       uses: actions/checkout@v6.0.1
@@ -36,11 +36,10 @@ jobs:
         path: repository
         submodules: true
 
-    # wget -c --trust-server-names 'https://cdimage.ubuntu.com/releases/22.04/release/ubuntu-22.04.2-preinstalled-server-arm64+raspi.img.xz'
-    - name: Download Raspbian or Ubuntu Image
+    - name: Download RaspberryPiOS Image
       run: |
-        cd repository/src/image
-        wget -c --trust-server-names 'https://cdimage.ubuntu.com/releases/20.04/release/ubuntu-20.04.5-preinstalled-server-arm64+raspi.img.xz'
+        cd repository/src/image-raspberrypiarm64
+        wget -c --trust-server-names 'https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2025-12-04/2025-12-04-raspios-trixie-arm64-lite.img.xz'
 
     - name: Update CustomPiOS Paths
       run: |
@@ -85,27 +84,3 @@ jobs:
         zip ${{ steps.copy.outputs.image }}.zip ${{ steps.copy.outputs.image }}.img
         echo "File size of ${{ steps.copy.outputs.image }}.zip"
         stat --printf="%s" ${{ steps.copy.outputs.image }}.zip
-
-#    - name: Create release
-#      uses: actions/create-release@v1
-#      if: github.event_name == 'schedule'
-#      id: create_release
-#      with:
-#        draft: ${{ github.ref_name == 'develop' }}
-#        prerelease: ${{ contains(env.DIST_VERSION, 'rc') || contains(env.DIST_VERSION, 'unstable') }}
-#        tag_name: ${{ steps.copy.outputs.tag }}
-#        release_name: MonsterPi ${{ steps.copy.outputs.image }}
-#        body: "Release notes not added" # ${{ steps.build_changelog.outputs.changelog }}
-#      env:
-#        GITHUB_TOKEN: ${{ github.token }}
-#
-#    - name: Upload server bundle zip
-#      uses: actions/upload-release-asset@v1
-#      if: github.event_name == 'schedule'
-#      env:
-#        GITHUB_TOKEN: ${{ github.token }}
-#      with:
-#        upload_url: ${{ steps.create_release.outputs.upload_url }}
-#        asset_path: ${{ steps.copy.outputs.image }}.zip
-#        asset_name: ${{ steps.copy.outputs.image }}.zip
-#        asset_content_type: application/zip

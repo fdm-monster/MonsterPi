@@ -24,7 +24,7 @@ Read the [MonsterPi](https://docs.fdm-monster.net/docs/installing/monsterpi) doc
 ## Features
 
 * [FDM Monster](https://fdm-monster.net) software for managing and monitoring 100+ Octoprint instances
-* [Ubuntu](https://ubuntu.com/download/raspberry-pi) Raspberry Pi distro image.
+* [Raspberry Pi OS](https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2025-12-04/2025-12-04-raspios-trixie-arm64-lite.img.xz)
 
 ## Contributors ✨
 
