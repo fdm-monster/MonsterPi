@@ -9,7 +9,7 @@ on:
 jobs:
   release:
     if: startsWith(github.ref, 'refs/heads/release')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
     - name: Install Dependencies
       run: |
@@ -21,7 +21,7 @@ jobs:
       with:
         repository: 'guysoft/CustomPiOS'
         path: CustomPiOS
-        ref: "79b77a4c1a34ef551ab09e9bd84710d048b65e55"      
+        ref: "79b77a4c1a34ef551ab09e9bd84710d048b65e55"
 
     - name: Checkout Project Repository
       uses: actions/checkout@v6.0.1

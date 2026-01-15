@@ -28,7 +28,7 @@ jobs:
       with:
         repository: 'guysoft/CustomPiOS'
         path: CustomPiOS
-        # ref: "79b77a4c1a34ef551ab09e9bd84710d048b65e55"
+        ref: "79b77a4c1a34ef551ab09e9bd84710d048b65e55"
 
     - name: Checkout Project Repository
       uses: actions/checkout@v6.0.1
