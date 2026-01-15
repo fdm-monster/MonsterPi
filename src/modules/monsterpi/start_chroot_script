@@ -14,8 +14,12 @@ fdmm_npm_package="@fdm-monster/server"
 fdmm_version="${MONSTERPI_FDMMONSTER_VERSION}"
 fdmm_nodejs_version="${MONSTERPI_NODEJS_VERSION:-24.12.0}"
 fdmm_server_port="4000"
+fdmm_home="/home/${BASE_USER}"
+fdmm_install_dir="${fdmm_home}/.fdm-monster"
+fdmm_data_dir="${fdmm_home}/.fdm-monster-data"
 installer_url="https://raw.githubusercontent.com/fdm-monster/fdm-monster-scripts/main/install/linux/install.sh"
-installer_path="/tmp/fdm-monster-install.sh"
+# Temporary: Use local install.sh for CI/CD testing (remove later)
+installer_path="/distro/modules/monsterpi/install.sh"
 
 # Setup
 source /common.sh
@@ -38,23 +42,30 @@ else
     apt-get -y install jq git screen libffi-dev libssl-dev libatlas3-base ca-certificates curl
 fi
 
-echo "Downloading FDM Monster installer from GitHub..."
-curl -fsSL "${installer_url}" -o "${installer_path}"
+# Temporary: Comment out curl to use local install.sh for CI/CD (remove later)
+# echo "Downloading FDM Monster installer from GitHub..."
+# curl -fsSL "${installer_url}" -o "${installer_path}"
+echo "Using local FDM Monster installer for CI/CD..."
+
+# Set up FDM Monster installation environment
+export FDMM_NODE_VERSION="${fdmm_nodejs_version}"
+export FDMM_NPM_PACKAGE="${fdmm_npm_package}"
+export FDMM_NPM_PACKAGE_VERSION="${fdmm_version}"
+export FDMM_HOME="${fdmm_home}"
+export FDMM_INSTALL_DIR="${fdmm_install_dir}"
+export FDMM_DATA_DIR="${fdmm_data_dir}"
+export FDMM_SERVER_PORT="${fdmm_server_port}"
 
 # Install FDM Monster using local installer script (provides nice CLI)
-# Run as pi user so all caches (.yarn, .cache) are created in correct location
-# Script uses sudo internally when needed (service file creation)
-echo "Installing FDM Monster ${fdmm_version} with local installer..."
+# Split into two phases for chroot environment:
+# 1. User-level: nodejs, yarn, fdm-monster package, CLI wrapper (run as pi user)
+# 2. Root-level: systemd service setup (run with appropriate privileges)
 
-sudo -u "${BASE_USER}" \
-    FDMM_NODE_VERSION="${fdmm_nodejs_version}" \
-    FDMM_NPM_PACKAGE="${fdmm_npm_package}" \
-    FDMM_NPM_PACKAGE_VERSION="${fdmm_version}" \
-    FDMM_HOME="/home/${BASE_USER}" \
-    FDMM_INSTALL_DIR="/home/${BASE_USER}/.fdm-monster" \
-    FDMM_DATA_DIR="/home/${BASE_USER}/.fdm-monster-data" \
-    FDMM_SERVER_PORT="${fdmm_server_port}" \
-    bash "${installer_path}" install
+echo "Installing FDM Monster ${fdmm_version} - User-level components..."
+sudo -u "${BASE_USER}" bash "${installer_path}" install-user
+
+echo "Installing FDM Monster ${fdmm_version} - Root-level components..."
+bash "${installer_path}" install-root
 
 # Clean up the installer script
 rm -f "${installer_path}"    
@@ -100,7 +111,7 @@ echo 'exit 0' >> /etc/rc.local
 
 # Configure User Environment
 # Inject FDM Monster installation directory into welcome script
-sed -i "s|__FDMM_INSTALL_DIR__|${FDMM_INSTALL_DIR}|g" /home/"${BASE_USER}"/scripts/welcome
+sed -i "s|__FDMM_INSTALL_DIR__|${fdmm_install_dir}|g" /home/"${BASE_USER}"/scripts/welcome
 
 # Add welcome message to user's bashrc
 echo "source /home/${BASE_USER}/scripts/welcome" >> /home/"${BASE_USER}"/.bashrc
