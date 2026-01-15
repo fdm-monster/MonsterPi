@@ -759,30 +759,16 @@ print_instructions() {
     return 0
 }
 
-# Main function - handles both install and CLI commands
 main() {
     validate_semver "$NODE_VERSION"
 
-    # If called with a command argument, handle it as CLI
-    if [[ $# -gt 0 ]]; then
-        handle_command "$@"
-        exit $?
+    if [[ $# -eq 0 ]]; then
+        set -- "install"
     fi
 
-    # Otherwise, run installer
-    print_banner
-    check_root
-    check_dependencies
-    detect_platform
-    ensure_nodejs
-    setup_yarn
-    install_fdm_monster
-    create_systemd_service
-    create_cli_wrapper
-    wait_for_service
-    print_instructions
-
-    return 0
+    # Handle the command
+    handle_command "$@"
+    exit $?
 }
 
 # Run main function with all arguments

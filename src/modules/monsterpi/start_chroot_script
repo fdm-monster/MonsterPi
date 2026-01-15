@@ -19,7 +19,7 @@ fdmm_install_dir="${fdmm_home}/.fdm-monster"
 fdmm_data_dir="${fdmm_home}/.fdm-monster-data"
 installer_url="https://raw.githubusercontent.com/fdm-monster/fdm-monster-scripts/main/install/linux/install.sh"
 # Temporary: Use local install.sh for CI/CD testing (remove later)
-installer_path="/distro/modules/monsterpi/install.sh"
+installer_path="install.sh"
 
 # Setup
 source /common.sh
@@ -69,7 +69,7 @@ bash "${installer_path}" install-root
 
 # Temporary: Skip cleanup since we're using local file (remove later)
 # Clean up the installer script
-# rm -f "${installer_path}"    
+# rm -f "${installer_path}"
 
 # Setup HAProxy and SSL
 if [ "$MONSTERPI_INCLUDE_HAPROXY" == "yes" ]
