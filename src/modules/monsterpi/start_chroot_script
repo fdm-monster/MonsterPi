@@ -18,9 +18,7 @@ fdmm_home="/home/${BASE_USER}"
 fdmm_install_dir="${fdmm_home}/.fdm-monster"
 fdmm_data_dir="${fdmm_home}/.fdm-monster-data"
 installer_url="https://raw.githubusercontent.com/fdm-monster/fdm-monster-scripts/main/install/linux/install.sh"
-# Temporary: Use local install.sh for CI/CD testing (remove later)
-# installer_path="/tmp/fdm-monster-install.sh"
-installer_path="/home/pi/install.sh"
+installer_path="/tmp/fdm-monster-install.sh"
 
 # Setup
 source /common.sh
@@ -43,10 +41,8 @@ else
     apt-get -y install jq git screen libffi-dev libssl-dev libatlas3-base ca-certificates curl
 fi
 
-# Temporary: Comment out curl to use local install.sh for CI/CD (remove later)
-# echo "Downloading FDM Monster installer from GitHub..."
-# curl -fsSL "${installer_url}" -o "${installer_path}"
-echo "Using local FDM Monster installer for CI/CD..."
+echo "Downloading FDM Monster installer from GitHub..."
+curl -fsSL "${installer_url}" -o "${installer_path}"
 
 # Set up FDM Monster installation environment
 export FDMM_NODE_VERSION="${fdmm_nodejs_version}"
@@ -68,9 +64,8 @@ sudo -u "${BASE_USER}" bash "${installer_path}" install-user
 echo "Installing FDM Monster ${fdmm_version} - Root-level components..."
 bash "${installer_path}" install-root
 
-# Temporary: Skip cleanup since we're using local file (remove later)
 # Clean up the installer script
-# rm -f "${installer_path}"
+rm -f "${installer_path}"
 
 # Setup HAProxy and SSL
 if [ "$MONSTERPI_INCLUDE_HAPROXY" == "yes" ]
