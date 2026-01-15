@@ -67,8 +67,9 @@ sudo -u "${BASE_USER}" bash "${installer_path}" install-user
 echo "Installing FDM Monster ${fdmm_version} - Root-level components..."
 bash "${installer_path}" install-root
 
+# Temporary: Skip cleanup since we're using local file (remove later)
 # Clean up the installer script
-rm -f "${installer_path}"    
+# rm -f "${installer_path}"    
 
 # Setup HAProxy and SSL
 if [ "$MONSTERPI_INCLUDE_HAPROXY" == "yes" ]

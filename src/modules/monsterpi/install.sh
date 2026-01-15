@@ -33,7 +33,7 @@ readonly YELLOW='\033[1;33m'
 readonly BLUE='\033[0;34m'
 readonly NC='\033[0m'
 
-readonly CLI_VERSION="1.0.14"
+readonly CLI_VERSION="1.0.15"
 
 # Configuration (see ENVIRONMENT VARIABLE OVERRIDES section above)
 USER_HOME="${FDMM_HOME:-$HOME}"
