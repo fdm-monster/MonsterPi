@@ -19,7 +19,8 @@ fdmm_install_dir="${fdmm_home}/.fdm-monster"
 fdmm_data_dir="${fdmm_home}/.fdm-monster-data"
 installer_url="https://raw.githubusercontent.com/fdm-monster/fdm-monster-scripts/main/install/linux/install.sh"
 # Temporary: Use local install.sh for CI/CD testing (remove later)
-installer_path="install.sh"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+installer_path="${SCRIPT_DIR}/install.sh"
 
 # Setup
 source /common.sh
