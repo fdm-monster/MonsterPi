@@ -1,15 +1,13 @@
 mode: ContinuousDelivery
 branches:
   release:
-    regex: ^releases?/(?<version>\d+\.\d+\.\d+)
+    regex: ^release/(?<version>.+)
     mode: ContinuousDeployment
-    label: ''
     increment: None
     is-release-branch: true
-    source-branches: ['main']
-    track-merge-target: false
+    prevent-increment:
+      when-current-commit-tagged: false
   main:
     regex: ^main$
     mode: ContinuousDelivery
-    label: ''
     increment: Patch
