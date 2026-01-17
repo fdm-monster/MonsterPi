@@ -5,7 +5,6 @@ import hashlib
 import os
 import argparse
 from datetime import date
-import glob
 
 
 def get_file_sha256(filepath):
@@ -19,26 +18,25 @@ def get_file_sha256(filepath):
 
 def main():
     parser = argparse.ArgumentParser(description='Generate Raspberry Pi Imager JSON')
-    parser.add_argument('--workspace', required=True, help='Workspace directory path')
+    parser.add_argument('--zip-path', required=True, help='Path to the zip file')
+    parser.add_argument('--sha256-path', required=True, help='Path to the .img.sha256 file')
     parser.add_argument('--image-url', required=True, help='URL to the uploaded image')
     parser.add_argument('--dist-version', required=True, help='Distribution version')
     parser.add_argument('--output', required=True, help='Output JSON file path')
 
     args = parser.parse_args()
 
-    # Find the zip file in workspace
-    zip_files = glob.glob(os.path.join(args.workspace, "*.zip"))
-    if not zip_files:
-        print(f"Error: No zip file found in {args.workspace}")
+    # Validate zip file exists
+    if not os.path.exists(args.zip_path):
+        print(f"Error: Zip file not found at {args.zip_path}")
         exit(1)
-    zip_path = zip_files[0]
+    zip_path = args.zip_path
 
-    # Find the img.sha256 file
-    sha256_files = glob.glob(os.path.join(args.workspace, "*.img.sha256"))
-    if not sha256_files:
-        print(f"Error: No .img.sha256 file found in {args.workspace}")
+    # Validate sha256 file exists
+    if not os.path.exists(args.sha256_path):
+        print(f"Error: SHA256 file not found at {args.sha256_path}")
         exit(1)
-    sha256_path = sha256_files[0]
+    sha256_path = args.sha256_path
 
     # Read extract SHA256 from .img.sha256 file
     with open(sha256_path, 'r') as f:

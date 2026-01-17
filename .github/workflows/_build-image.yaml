@@ -179,10 +179,37 @@ jobs:
       - name: Generate Raspberry Pi Imager JSON
         run: |
           ZIP_URL="https://github.com/${{ github.repository }}/releases/download/${{ steps.copy.outputs.tag }}/${{ steps.copy.outputs.image }}.zip"
+          ZIP_PATH="${{ steps.copy.outputs.image }}.zip"
           OUTPUT_JSON="repository/src/workspace/monsterpi-rpi-imager.json"
 
+          # Find the .img.sha256 file recursively
+          SHA256_PATH=$(find repository/src/workspace -name "*.img.sha256" -type f | head -n 1)
+
+          if [ -z "$SHA256_PATH" ]; then
+            echo "Warning: No .img.sha256 file found, generating it..."
+
+            # Find the .img file
+            IMG_PATH=$(find repository/src/workspace -name "*.img" -type f | head -n 1)
+
+            if [ -z "$IMG_PATH" ]; then
+              echo "Error: No .img file found in repository/src/workspace"
+              exit 1
+            fi
+
+            echo "Found IMG file: $IMG_PATH"
+
+            # Generate SHA256 file
+            SHA256_PATH="${IMG_PATH}.sha256"
+            sha256sum "$IMG_PATH" > "$SHA256_PATH"
+
+            echo "Generated SHA256 file: $SHA256_PATH"
+          else
+            echo "Found existing SHA256 file: $SHA256_PATH"
+          fi
+
           python3 repository/.github/scripts/generate-rpi-imager-json.py \
-            --workspace repository/src/workspace \
+            --zip-path "$ZIP_PATH" \
+            --sha256-path "$SHA256_PATH" \
             --image-url "$ZIP_URL" \
             --dist-version "${{ steps.copy.outputs.dist_version }}" \
             --output "$OUTPUT_JSON"
