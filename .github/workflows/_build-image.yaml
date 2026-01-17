@@ -120,8 +120,9 @@ jobs:
       - name: Copy output
         id: copy
         run: |
-          source repository/src/config
           source repository/src/modules/monsterpi/config
+          source repository/src/config
+          source repository/src/config.local
 
           # TAG is not always equal to DIST_VERSION (f.e. nightly tag)
           if [ -n "${{ inputs.github_release_tag }}" ]; then
