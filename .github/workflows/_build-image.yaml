@@ -182,7 +182,7 @@ jobs:
           ZIP_URL="https://github.com/${{ github.repository }}/releases/download/${{ steps.copy.outputs.tag }}/${{ steps.copy.outputs.image }}.zip"
           ZIP_PATH="${{ steps.copy.outputs.image }}.zip"
           IMG_PATH="${{ steps.copy.outputs.image }}.img"
-          JSON_FILENAME="monsterpi-rpi-imager-${{ steps.copy.outputs.dist_version }}.json"
+          JSON_FILENAME="monsterpi-rpi-imager.json"
           OUTPUT_JSON="$JSON_FILENAME"
 
           # Check for existing .img.sha256 file
@@ -283,8 +283,12 @@ jobs:
           echo "1. Open Raspberry Pi Imager" >> release-notes.md
           echo "2. Click **App Options** in the bottom right" >> release-notes.md
           echo "3. Go to **Content Repository** and click **EDIT**" >> release-notes.md
-          echo "4. Select **Use custom URL**, copy and paste the following URL (ending with .json):" >> release-notes.md
+          echo "4. Select **Use custom URL**, copy and paste the following _latest_ URL (ending with .json):" >> release-notes.md
           echo "" >> release-notes.md
+          echo '```' >> release-notes.md
+          echo "https://github.com/${{ github.repository }}/releases/download/latest/${{ steps.generate_json.outputs.json_filename }}" >> release-notes.md
+          echo '```' >> release-notes.md
+          echo "Or select this release specifically:" >> release-notes.md
           echo '```' >> release-notes.md
           echo "https://github.com/${{ github.repository }}/releases/download/${{ steps.copy.outputs.tag }}/${{ steps.generate_json.outputs.json_filename }}" >> release-notes.md
           echo '```' >> release-notes.md
