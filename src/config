@@ -8,11 +8,11 @@ export BASE_BOARD=raspberrypiarm64
 export BASE_IGNORE_VARIANT_NAME=yes
 export BASE_IMAGE_RASPBIAN=no
 
-# rpi-imager json generator settings
-export RPI_IMAGER_NAME="${DIST_NAME}"
-export RPI_IMAGER_DESCRIPTION="FDM Monster RaspberryPi distro"
-export RPI_IMAGER_WEBSITE="https://github.com/fdm-monster/monster-pi"
-export RPI_IMAGER_ICON="https://github.com/fdm-monster/fdm-monster/blob/ba18cb7049a137939f9d2845d4d32507c9dbba08/docs/images/logo-copyright.png"
+# rpi-imager json generator settings (done by our own scripts)
+# export RPI_IMAGER_NAME="${DIST_NAME}"
+# export RPI_IMAGER_DESCRIPTION="FDM Monster RaspberryPi distro"
+# export RPI_IMAGER_WEBSITE="https://github.com/fdm-monster/monster-pi"
+# export RPI_IMAGER_ICON="https://github.com/fdm-monster/fdm-monster/blob/ba18cb7049a137939f9d2845d4d32507c9dbba08/docs/images/logo-copyright.png"
 
 export BASE_IMAGE_ENLARGEROOT=1500
 export BASE_IMAGE_RESIZEROOT=250

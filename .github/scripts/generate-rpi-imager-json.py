@@ -90,7 +90,7 @@ def main():
                 "name": f"MonsterPi {args.dist_version} (Trixie)",
                 "description": f"FDM Monster RaspberryPi distro ({args.dist_version})",
                 "website": "https://fdm-monster.net",
-                "icon": "https://github.com/fdm-monster/fdm-monster/blob/ba18cb7049a137939f9d2845d4d32507c9dbba08/docs/images/logo-copyright.png",
+                "icon": "https://raw.githubusercontent.com/fdm-monster/fdm-monster/ba18cb7049a137939f9d2845d4d32507c9dbba08/docs/images/logo-copyright.png",
                 "url": args.image_url,
                 "extract_size": extract_size,
                 "extract_sha256": extract_sha256,
