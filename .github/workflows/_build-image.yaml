@@ -13,16 +13,26 @@ on:
         required: false
         type: boolean
         default: false
-      always_zip:
-        description: 'Always zip the image'
-        required: false
-        type: boolean
-        default: false
       fetch_depth:
         description: 'Git fetch depth'
         required: false
         type: number
         default: 1
+      image_version_override:
+        description: 'Override DIST_VERSION and image tag (e.g., "1.0.0-2026-01-17-nightly")'
+        required: false
+        type: string
+        default: ''
+      github_release_tag:
+        description: 'GitHub release tag (can differ from image version, e.g., "nightly")'
+        required: false
+        type: string
+        default: ''
+      release_notes_suffix:
+        description: 'Additional text to append to release notes'
+        required: false
+        type: string
+        default: ''
     outputs:
       tag:
         description: 'Image tag'
@@ -30,6 +40,12 @@ on:
       image:
         description: 'Image name'
         value: ${{ jobs.build.outputs.image }}
+      fdm_monster_version:
+        description: 'FDM Monster version'
+        value: ${{ jobs.build.outputs.fdm_monster_version }}
+      build_date:
+        description: 'Build date'
+        value: ${{ jobs.build.outputs.build_date }}
 
 jobs:
   build:
@@ -37,6 +53,8 @@ jobs:
     outputs:
       tag: ${{ steps.copy.outputs.tag }}
       image: ${{ steps.copy.outputs.image }}
+      fdm_monster_version: ${{ steps.copy.outputs.fdm_monster_version }}
+      build_date: ${{ steps.copy.outputs.build_date }}
     steps:
     - name: Install Dependencies
       run: |
@@ -58,13 +76,11 @@ jobs:
         fetch-depth: ${{ inputs.fetch_depth }}
 
     - name: Install GitVersion
-      if: inputs.version_strategy == 'release'
       uses: gittools/actions/gitversion/setup@v4.2.0
       with:
         versionSpec: '6.x'
 
     - name: Use GitVersion
-      if: inputs.version_strategy == 'release'
       uses: gittools/actions/gitversion/execute@v4.2.0
       id: gitversion
       with:
@@ -80,18 +96,19 @@ jobs:
         cd repository/src
         ../../CustomPiOS/src/update-custompios-paths
 
-    - name: Set nightly image version
-      if: inputs.version_strategy == 'nightly'
+    - name: Set image version
       run: |
-        source repository/src/config
-        NOW=$(date +"%Y-%m-%d")
-        echo "DIST_VERSION=$DIST_VERSION-$NOW-nightly" > repository/src/config.local
-
-    - name: Set release image version
-      if: inputs.version_strategy == 'release'
-      run: |
-        source repository/src/config
-        echo "DIST_VERSION=${{ steps.gitversion.outputs.majorMinorPatch }}" > repository/src/config.local
+        if [ -n "${{ inputs.image_version_override }}" ]; then
+          # Use override directly
+          echo "DIST_VERSION=${{ inputs.image_version_override }}" > repository/src/config.local
+        elif [ "${{ inputs.version_strategy }}" == "release" ]; then
+          # Release: use GitVersion only
+          echo "DIST_VERSION=${{ steps.gitversion.outputs.majorMinorPatch }}" > repository/src/config.local
+        else
+          # Build/nightly: use GitVersion with date and strategy suffix
+          NOW=$(date +"%Y-%m-%d")
+          echo "DIST_VERSION=${{ steps.gitversion.outputs.majorMinorPatch }}-$NOW-${{ inputs.version_strategy }}" > repository/src/config.local
+        fi
 
     - name: Build Image
       run: |
@@ -103,18 +120,23 @@ jobs:
       id: copy
       run: |
         source repository/src/config
-        if [ "${{ inputs.version_strategy }}" == "nightly" ]; then
-          NOW=$(date +"%Y-%m-%d")
-          TAG=${DIST_VERSION}-${NOW}-nightly
-        else
-          TAG=${DIST_VERSION}
-        fi
+        source repository/src/modules/monsterpi/config
+
+        # TAG is always equal to DIST_VERSION (set in previous step)
+        TAG=${DIST_VERSION}
         IMAGE=monsterpi-$TAG
 
         cp repository/src/workspace/*.img $IMAGE.img
 
+        # Copy build log
+        if [ -f repository/src/build.log ]; then
+          cp repository/src/build.log $IMAGE-build.log
+        fi
+
         echo "tag=$TAG" >> $GITHUB_OUTPUT
         echo "image=$IMAGE" >> $GITHUB_OUTPUT
+        echo "fdm_monster_version=$MONSTERPI_FDMMONSTER_VERSION" >> $GITHUB_OUTPUT
+        echo "build_date=$(date +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_OUTPUT
 
     - name: Show size and tag
       run: |
@@ -123,51 +145,120 @@ jobs:
         stat --printf="%s" ${{ steps.copy.outputs.image }}.img
 
     - name: Zip Image
-      if: inputs.always_zip
       run: |
         zip ${{ steps.copy.outputs.image }}.zip ${{ steps.copy.outputs.image }}.img
         echo "File size of ${{ steps.copy.outputs.image }}.zip"
         stat --printf="%s" ${{ steps.copy.outputs.image }}.zip
 
-    - name: Generate Raspberry Pi Imager JSON
-      if: inputs.create_release
+    - name: Upload artifacts
+      if: ${{ !inputs.create_release }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-artifacts
+        path: |
+          ${{ steps.copy.outputs.image }}.zip
+          ${{ steps.copy.outputs.image }}-build.log
+        retention-days: 7
+
+    - name: Show release notes
       run: |
-        source repository/src/config
-        python3 CustomPiOS/src/custompios_core/make_rpi-imager-snipplet.py \
-          --rpi_imager_url "${{ steps.upload_zip.outputs.browser_download_url }}" \
-          -- default
+        echo "Release Notes:"
+        echo "=============="
+        echo "The MonsterPi image for running FDM Monster on Raspberry Pi."
+        echo ""
+        echo "**Build Date:** ${{ steps.copy.outputs.build_date }}"
+        echo "**FDM Monster Version:** ${{ steps.copy.outputs.fdm_monster_version }}"
+        echo "**Image Version:** ${{ steps.copy.outputs.tag }}"
+        echo ""
+        echo "${{ inputs.release_notes_suffix }}"
+
+    - name: Generate release notes
+      if: inputs.create_release
+      id: release_notes
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        TAG="${{ inputs.github_release_tag != '' && inputs.github_release_tag || steps.copy.outputs.tag }}"
+
+        # Generate automatic notes
+        AUTO_NOTES=$(gh api repos/${{ github.repository }}/releases/generate-notes \
+          -f tag_name="$TAG" \
+          -f target_commitish="${{ github.sha }}" \
+          --jq '.body' || echo "")
+
+        # Create custom template
+        cat > release-notes.md << 'EOF'
+        The MonsterPi image for running FDM Monster on Raspberry Pi.
+
+        **Build Date:** ${{ steps.copy.outputs.build_date }}
+        **FDM Monster Version:** ${{ steps.copy.outputs.fdm_monster_version }}
+        **Image Version:** ${{ steps.copy.outputs.tag }}
+
+        ${{ inputs.release_notes_suffix }}
+
+        ---
+
+        EOF
+
+        # Append auto-generated notes if available
+        if [ -n "$AUTO_NOTES" ]; then
+          echo "$AUTO_NOTES" >> release-notes.md
+        fi
+
+        echo "release_tag=$TAG" >> $GITHUB_OUTPUT
 
     - name: Create release
       if: inputs.create_release
-      uses: actions/create-release@v1
       id: create_release
-      with:
-        draft: false
-        prerelease: ${{ contains(steps.copy.outputs.tag, 'rc') || contains(steps.copy.outputs.tag, 'unstable') }}
-        tag_name: ${{ steps.copy.outputs.tag }}
-        release_name: MonsterPi ${{ steps.copy.outputs.image }}
-        body: "The MonsterPi image for running FDM Monster on Raspberry Pi. Release notes will be added manually."
       env:
-        GITHUB_TOKEN: ${{ github.token }}
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        PRERELEASE_FLAG=""
+        TAG="${{ steps.release_notes.outputs.release_tag }}"
 
-    - name: Upload server bundle zip
-      if: inputs.create_release
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ steps.copy.outputs.image }}.zip
-        asset_name: ${{ steps.copy.outputs.image }}.zip
-        asset_content_type: application/zip
+        # Check if this should be a prerelease
+        if [[ "$TAG" == *"rc"* ]] || [[ "$TAG" == *"unstable"* ]] || [[ "$TAG" == *"nightly"* ]]; then
+          PRERELEASE_FLAG="--prerelease"
+        fi
 
-    - name: Upload Raspberry Pi Imager JSON
+        # Create release
+        gh release create "$TAG" \
+          --title "MonsterPi $TAG" \
+          --notes-file release-notes.md \
+          $PRERELEASE_FLAG
+
+    - name: Upload release assets
       if: inputs.create_release
-      uses: actions/upload-release-asset@v1
       env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: repository/src/workspace/your-distro-rpi-imager-default.json
-        asset_name: your-distro-rpi-imager.json
-        asset_content_type: application/json
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        TAG="${{ steps.release_notes.outputs.release_tag }}"
+
+        gh release upload "$TAG" \
+          "${{ steps.copy.outputs.image }}.zip#${{ steps.copy.outputs.image }}.zip" \
+          "${{ steps.copy.outputs.image }}-build.log#${{ steps.copy.outputs.image }}-build.log"
+
+    - name: Generate and upload Raspberry Pi Imager JSON
+      if: inputs.create_release
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        TAG="${{ steps.release_notes.outputs.release_tag }}"
+
+        # Construct the download URL for the zip file
+        ZIP_URL="https://github.com/${{ github.repository }}/releases/download/$TAG/${{ steps.copy.outputs.image }}.zip"
+
+        # Generate the RPI Imager JSON
+        source repository/src/config
+        python3 CustomPiOS/src/custompios_core/make_rpi-imager-snipplet.py \
+          --rpi_imager_url "$ZIP_URL" \
+          -- default
+
+        # Show the generated JSON
+        echo "Raspberry Pi Imager JSON:"
+        echo "========================="
+        cat repository/src/workspace/your-distro-rpi-imager-default.json
+
+        # Upload to release
+        gh release upload "$TAG" \
+          "repository/src/workspace/your-distro-rpi-imager-default.json#your-distro-rpi-imager.json"

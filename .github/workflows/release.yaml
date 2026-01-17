@@ -2,16 +2,24 @@
 
 name: Release
 on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag (optional override)'
+        required: false
+        type: string
   push:
     branches:
       - 'release/*'
 
 jobs:
   release:
-    if: startsWith(github.ref, 'refs/heads/release')
+    if: always()
     uses: ./.github/workflows/_build-image.yaml
     with:
       version_strategy: 'release'
       create_release: true
-      always_zip: true
       fetch_depth: 0
+      image_version_override: ${{ inputs.release_tag || '' }}
+      github_release_tag: ${{ inputs.release_tag || '' }}
+      release_notes_suffix: ${{ github.event_name == 'workflow_dispatch' && 'This build was triggered manually via workflow dispatch.' || 'This build is an official MonsterPi release.' }}

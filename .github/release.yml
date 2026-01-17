@@ -1,0 +1,26 @@
+changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+    authors:
+      - renovate
+  categories:
+    - title: 🚀 Features
+      labels:
+        - enhancement
+        - deployment
+    - title: 🐛 Bug Fixes
+      labels:
+        - bug
+        - security fix
+    - title: 📚 Documentation
+      labels:
+        - documentation
+    - title: Other Changes
+      labels:
+        - "*"
+      exclude:
+        labels:
+          - renovate
+        authors:
+          - renovate
