@@ -288,6 +288,7 @@ jobs:
           fi
 
           gh release create "$TAG" \
+            --repo "${{ github.repository }}" \
             --title "MonsterPi $TAG" \
             --notes-file release-notes.md \
             $PRERELEASE_FLAG
@@ -298,6 +299,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release upload "${{ steps.copy.outputs.tag }}" \
+            --repo "${{ github.repository }}" \
             "${{ steps.copy.outputs.image }}.zip#${{ steps.copy.outputs.image }}.zip" \
             "${{ steps.copy.outputs.image }}.img.sha256#${{ steps.copy.outputs.image }}.img.sha256" \
             "${{ steps.copy.outputs.image }}-build.log#${{ steps.copy.outputs.image }}-build.log" \
