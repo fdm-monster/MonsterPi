@@ -145,21 +145,21 @@ if ($distVersion -ne $majorMinorPatch) {
 
         # Update the config file
         $configContent = Get-Content $configPath -Raw
-        $configContent = $configContent -replace "(export DIST_VERSION=).*", "`$1$majorMinorPatch"
+        $configContent = $configContent -replace "(export DIST_VERSION=).*", "`${1}$majorMinorPatch"
         Set-Content -Path $configPath -Value $configContent -NoNewline
 
         Write-Success "Updated DIST_VERSION to $majorMinorPatch"
 
         # Commit the change
         if (Confirm-Action "Would you like to commit this change?") {
-            git add $configPath
+            git add "$configPath"
             git commit -m "chore: bump version to $majorMinorPatch"
             Write-Success "Committed version update"
             Write-Host ""
             Write-Info "Please push this commit and re-run the release script."
             Write-Host "  git push origin main"
         } else {
-            Write-Warning "Changes staged but not committed. Please commit manually."
+            Write-Warning "Changes made to config file but not committed. Please commit manually."
         }
     } else {
         Write-Info "Exiting without changes."
@@ -198,7 +198,7 @@ Write-Host ""
 
 if (Confirm-Action "Would you like to create the release branch now?") {
     Write-Info "Creating release branch..."
-    git checkout -b $releaseBranch
+    git checkout -b "$releaseBranch"
 
     if ($LASTEXITCODE -eq 0) {
         Write-Success "Created release branch: $releaseBranch"
