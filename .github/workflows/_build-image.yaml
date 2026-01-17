@@ -177,11 +177,13 @@ jobs:
           retention-days: 90
 
       - name: Generate Raspberry Pi Imager JSON
+        id: generate_json
         run: |
           ZIP_URL="https://github.com/${{ github.repository }}/releases/download/${{ steps.copy.outputs.tag }}/${{ steps.copy.outputs.image }}.zip"
           ZIP_PATH="${{ steps.copy.outputs.image }}.zip"
           IMG_PATH="${{ steps.copy.outputs.image }}.img"
-          OUTPUT_JSON="monsterpi-rpi-imager.json"
+          JSON_FILENAME="monsterpi-rpi-imager-${{ steps.copy.outputs.dist_version }}.json"
+          OUTPUT_JSON="$JSON_FILENAME"
 
           # Check for existing .img.sha256 file
           if [ -f "${IMG_PATH}.sha256" ]; then
@@ -217,12 +219,22 @@ jobs:
           echo "==================================="
           cat "$OUTPUT_JSON"
 
+          # Extract ZIP SHA256 from JSON and save to .zip.sha256 file
+          ZIP_SHA256=$(jq -r '.os_list[0].image_download_sha256' "$OUTPUT_JSON")
+          echo "$ZIP_SHA256  ${{ steps.copy.outputs.image }}.zip" > "${{ steps.copy.outputs.image }}.zip.sha256"
+          echo ""
+          echo "Extracted ZIP SHA256 from JSON:"
+          cat "${{ steps.copy.outputs.image }}.zip.sha256"
+
+          # Export JSON filename for other steps
+          echo "json_filename=$JSON_FILENAME" >> $GITHUB_OUTPUT
+
       # Upload artifact for diagnostics (available for both release and non-release builds)
       - name: Upload Raspberry Pi Imager JSON artifact
         uses: actions/upload-artifact@v6
         with:
           name: build-artifacts-rpi-imager-json
-          path: monsterpi-rpi-imager.json
+          path: ${{ steps.generate_json.outputs.json_filename }}
           retention-days: 90
 
       - name: Upload SHA256 artifact
@@ -230,6 +242,13 @@ jobs:
         with:
           name: build-artifacts-sha256
           path: ${{ steps.copy.outputs.image }}.img.sha256
+          retention-days: 90
+
+      - name: Upload ZIP SHA256 artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: build-artifacts-zip-sha256
+          path: ${{ steps.copy.outputs.image }}.zip.sha256
           retention-days: 90
 
       - name: Generate release notes
@@ -248,12 +267,22 @@ jobs:
           echo "**FDM Monster Version:** ${{ steps.copy.outputs.fdm_monster_version }}" >> release-notes.md
           echo "**Image Version:** ${{ steps.copy.outputs.dist_version }}" >> release-notes.md
           echo "" >> release-notes.md
+          echo "📥 [Download image here](https://github.com/${{ github.repository }}/releases/download/${{ steps.copy.outputs.tag }}/${{ steps.copy.outputs.image }}.zip)" >> release-notes.md
+          echo "" >> release-notes.md
 
-          # Add SHA256 checksum if file exists
+          # Add SHA256 checksums if files exist
           if [ -f "${{ steps.copy.outputs.image }}.img.sha256" ]; then
-            echo "**SHA256 Checksum:**" >> release-notes.md
+            echo "**SHA256 Checksum (Image):**" >> release-notes.md
             echo '```' >> release-notes.md
             cat "${{ steps.copy.outputs.image }}.img.sha256" >> release-notes.md
+            echo '```' >> release-notes.md
+            echo "" >> release-notes.md
+          fi
+
+          if [ -f "${{ steps.copy.outputs.image }}.zip.sha256" ]; then
+            echo "**SHA256 Checksum (ZIP):**" >> release-notes.md
+            echo '```' >> release-notes.md
+            cat "${{ steps.copy.outputs.image }}.zip.sha256" >> release-notes.md
             echo '```' >> release-notes.md
             echo "" >> release-notes.md
           fi
@@ -301,7 +330,8 @@ jobs:
         run: |
           gh release upload "${{ steps.copy.outputs.tag }}" \
             --repo "${{ github.repository }}" \
-            "${{ steps.copy.outputs.image }}.zip#${{ steps.copy.outputs.image }}.zip" \
-            "${{ steps.copy.outputs.image }}.img.sha256#${{ steps.copy.outputs.image }}.img.sha256" \
-            "${{ steps.copy.outputs.image }}-build.log#${{ steps.copy.outputs.image }}-build.log" \
-            "monsterpi-rpi-imager.json#monsterpi-rpi-imager.json"
+            "${{ steps.copy.outputs.image }}.zip" \
+            "${{ steps.copy.outputs.image }}.zip.sha256" \
+            "${{ steps.copy.outputs.image }}.img.sha256" \
+            "${{ steps.copy.outputs.image }}-build.log" \
+            "${{ steps.generate_json.outputs.json_filename }}"

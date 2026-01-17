@@ -156,16 +156,31 @@ if ($distVersion -ne $majorMinorPatch) {
             git commit -m "chore: bump version to $majorMinorPatch"
             Write-Success "Committed version update"
             Write-Host ""
-            Write-Info "Please push this commit and re-run the release script."
-            Write-Host "  git push origin main"
+
+            # Ask to push the commit
+            if (Confirm-Action "Would you like to push this commit to main?") {
+                Write-Info "Pushing to main..."
+                git push origin main
+
+                if ($LASTEXITCODE -eq 0) {
+                    Write-Success "Pushed version update to main"
+                    Write-Host ""
+                } else {
+                    Write-Error "Failed to push to main"
+                    exit 1
+                }
+            } else {
+                Write-Info "Commit not pushed. Exiting."
+                exit 0
+            }
         } else {
             Write-Warning "Changes made to config file but not committed. Please commit manually."
+            exit 0
         }
     } else {
         Write-Info "Exiting without changes."
+        exit 0
     }
-
-    exit 0
 }
 
 Write-Success "Versions are in sync!"
@@ -192,29 +207,35 @@ if ($remoteBranchExists) {
 Write-Success "Release branch does not exist"
 Write-Host ""
 
-# 8. Offer to create release branch
-Write-Info "Ready to create release branch: $releaseBranch"
+# 8. Create release branch
+Write-Info "Creating release branch: $releaseBranch"
+git checkout -b "$releaseBranch"
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "Failed to create release branch"
+    exit 1
+}
+
+Write-Success "Created release branch: $releaseBranch"
 Write-Host ""
 
-if (Confirm-Action "Would you like to create the release branch now?") {
-    Write-Info "Creating release branch..."
-    git checkout -b "$releaseBranch"
+# Ask to push the release branch
+if (Confirm-Action "Would you like to push the release branch?") {
+    Write-Info "Pushing release branch..."
+    git push origin "$releaseBranch"
 
     if ($LASTEXITCODE -eq 0) {
-        Write-Success "Created release branch: $releaseBranch"
+        Write-Success "Pushed release branch to remote"
         Write-Host ""
-        Write-Info "Next steps:"
-        Write-Host "  1. Review the branch and make any necessary changes"
-        Write-Host "  2. When ready, push the branch with:"
-        Write-Host ""
-        Write-Success "     git push origin $releaseBranch"
-        Write-Host ""
-        Write-Info "  3. This will trigger the release workflow automatically"
+        Write-Info "The release workflow will now be triggered automatically."
     } else {
-        Write-Error "Failed to create release branch"
+        Write-Error "Failed to push release branch"
         exit 1
     }
 } else {
-    Write-Info "Release branch not created. Exiting."
+    Write-Info "Release branch not pushed. Exiting."
+    Write-Host ""
+    Write-Info "To push later, use:"
+    Write-Host "  git push origin $releaseBranch"
     exit 0
 }
