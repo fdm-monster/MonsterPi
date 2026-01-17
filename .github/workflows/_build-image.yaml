@@ -146,6 +146,15 @@ jobs:
           echo "fdm_monster_version=$MONSTERPI_FDMMONSTER_VERSION" >> $GITHUB_OUTPUT
           echo "build_date=$(date +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_OUTPUT
 
+      - name: Upload build log artifact
+        if: ${{ !inputs.create_release }}
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts-log
+          path: ${{ steps.copy.outputs.image }}-build.log
+          retention-days: 90
+
       - name: Show size and tag
         run: |
           echo "Tag ${{steps.copy.outputs.tag}}"
@@ -167,13 +176,27 @@ jobs:
           path: ${{ steps.copy.outputs.image }}.zip
           retention-days: 90
 
-      - name: Upload build log artifact
-        if: ${{ !inputs.create_release }}
-        continue-on-error: true
+      - name: Generate Raspberry Pi Imager JSON
+        run: |
+          ZIP_URL="https://github.com/${{ github.repository }}/releases/download/${{ steps.copy.outputs.tag }}/${{ steps.copy.outputs.image }}.zip"
+          OUTPUT_JSON="repository/src/workspace/monsterpi-rpi-imager.json"
+
+          python3 .github/scripts/generate-rpi-imager-json.py \
+            --workspace repository/src/workspace \
+            --image-url "$ZIP_URL" \
+            --dist-version "${{ steps.copy.outputs.dist_version }}" \
+            --output "$OUTPUT_JSON"
+
+          echo ""
+          echo "Generated Raspberry Pi Imager JSON:"
+          echo "==================================="
+          cat "$OUTPUT_JSON"
+
+      - name: Upload Raspberry Pi Imager JSON artifact
         uses: actions/upload-artifact@v4
         with:
-          name: build-artifacts-log
-          path: ${{ steps.copy.outputs.image }}-build.log
+          name: build-artifacts-rpi-imager-json
+          path: repository/src/workspace/monsterpi-rpi-imager.json
           retention-days: 90
 
       - name: Generate release notes
@@ -233,26 +256,5 @@ jobs:
         run: |
           gh release upload "${{ steps.copy.outputs.tag }}" \
             "${{ steps.copy.outputs.image }}.zip#${{ steps.copy.outputs.image }}.zip" \
-            "${{ steps.copy.outputs.image }}-build.log#${{ steps.copy.outputs.image }}-build.log"
-
-      - name: Generate and upload Raspberry Pi Imager JSON
-        if: inputs.create_release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          ZIP_URL="https://github.com/${{ github.repository }}/releases/download/${{ steps.copy.outputs.tag }}/${{ steps.copy.outputs.image }}.zip"
-          OUTPUT_JSON="repository/src/workspace/monsterpi-rpi-imager.json"
-
-          python3 .github/scripts/generate-rpi-imager-json.py \
-            --workspace repository/src/workspace \
-            --image-url "$ZIP_URL" \
-            --dist-version "${{ steps.copy.outputs.dist_version }}" \
-            --output "$OUTPUT_JSON"
-
-          echo ""
-          echo "Raspberry Pi Imager JSON:"
-          echo "========================="
-          cat "$OUTPUT_JSON"
-
-          gh release upload "${{ steps.copy.outputs.tag }}" \
-            "$OUTPUT_JSON#monsterpi-rpi-imager.json"
+            "${{ steps.copy.outputs.image }}-build.log#${{ steps.copy.outputs.image }}-build.log" \
+            "repository/src/workspace/monsterpi-rpi-imager.json#monsterpi-rpi-imager.json"
