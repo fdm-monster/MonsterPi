@@ -107,8 +107,8 @@ jobs:
           CONFIG_FILE="src/modules/monsterpi/config"
 
           # Configure git
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "MonsterBot"
+          git config user.email "monsterbot@users.noreply.github.com"
 
           # Create and checkout branch (force create/reset if exists)
           git checkout -B "$BRANCH_NAME"

@@ -228,6 +228,15 @@ if (Confirm-Action "Would you like to push the release branch?") {
         Write-Success "Pushed release branch to remote"
         Write-Host ""
         Write-Info "The release workflow will now be triggered automatically."
+        Write-Host ""
+
+        # Ask to open GitHub Actions page
+        if (Confirm-Action "Would you like to open the GitHub Actions page?") {
+            $actionsUrl = "https://github.com/fdm-monster/MonsterPi/actions/workflows/release.yaml"
+            Write-Info "Opening GitHub Actions page..."
+            Start-Process $actionsUrl
+            Write-Success "Done!"
+        }
     } else {
         Write-Error "Failed to push release branch"
         exit 1
