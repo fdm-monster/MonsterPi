@@ -57,7 +57,46 @@ if ($currentBranch -ne "main") {
 Write-Success "On main branch"
 Write-Host ""
 
-# 2. Run GitVersion and get FullSemVer
+# 2. Check for uncommitted changes
+Write-Info "Checking for uncommitted changes..."
+$gitStatus = git status --porcelain
+if ($gitStatus) {
+    Write-Error "Error: You have uncommitted changes in your working directory"
+    Write-Host ""
+    git status --short
+    Write-Host ""
+    Write-Info "Please commit or stash your changes before creating a release."
+    exit 1
+}
+Write-Success "Working directory is clean"
+Write-Host ""
+
+# 3. Check if local main is synced with origin/main
+Write-Info "Checking if main is synced with origin/main..."
+git fetch origin main --quiet
+$localCommit = git rev-parse main
+$remoteCommit = git rev-parse origin/main
+
+if ($localCommit -ne $remoteCommit) {
+    Write-Error "Error: Local main branch is not synced with origin/main"
+
+    $behindCount = git rev-list --count main..origin/main
+    $aheadCount = git rev-list --count origin/main..main
+
+    if ($behindCount -gt 0) {
+        Write-Host "  You are $behindCount commit(s) behind origin/main"
+        Write-Info "Pull the latest changes: git pull origin main"
+    }
+    if ($aheadCount -gt 0) {
+        Write-Host "  You are $aheadCount commit(s) ahead of origin/main"
+        Write-Info "Push your changes first: git push origin main"
+    }
+    exit 1
+}
+Write-Success "Local main is synced with origin/main"
+Write-Host ""
+
+# 4. Run GitVersion and get FullSemVer
 Write-Info "Running GitVersion..."
 $gitVersionOutput = dotnet-gitversion | ConvertFrom-Json
 if (-not $gitVersionOutput) {
@@ -72,7 +111,7 @@ Write-Success "GitVersion FullSemVer: $fullSemVer"
 Write-Success "GitVersion MajorMinorPatch: $majorMinorPatch"
 Write-Host ""
 
-# 3. Read DIST_VERSION from src/config
+# 5. Read DIST_VERSION from src/config
 Write-Info "Reading DIST_VERSION from src/config..."
 $configPath = "src/config"
 if (-not (Test-Path $configPath)) {
@@ -94,7 +133,7 @@ if (-not $distVersion) {
 Write-Success "DIST_VERSION in config: $distVersion"
 Write-Host ""
 
-# 4. Check if versions are in sync
+# 6. Check if versions are in sync
 if ($distVersion -ne $majorMinorPatch) {
     Write-Warning "Version mismatch detected!"
     Write-Host "  Config DIST_VERSION: $distVersion"
@@ -132,7 +171,7 @@ if ($distVersion -ne $majorMinorPatch) {
 Write-Success "Versions are in sync!"
 Write-Host ""
 
-# 5. Check if release branch already exists
+# 7. Check if release branch already exists
 $releaseBranch = "release/$majorMinorPatch"
 Write-Info "Checking if release branch exists..."
 
@@ -144,7 +183,7 @@ if ($LASTEXITCODE -eq 0) {
     exit 1
 }
 
-$remoteBranchExists = git ls-remote --heads origin $releaseBranch | Select-String $releaseBranch
+$remoteBranchExists = git ls-remote --heads origin "refs/heads/$releaseBranch" | Select-String -Pattern "refs/heads/$releaseBranch$"
 if ($remoteBranchExists) {
     Write-Error "Error: Release branch '$releaseBranch' already exists on remote"
     exit 1
@@ -153,7 +192,7 @@ if ($remoteBranchExists) {
 Write-Success "Release branch does not exist"
 Write-Host ""
 
-# 6. Offer to create release branch
+# 8. Offer to create release branch
 Write-Info "Ready to create release branch: $releaseBranch"
 Write-Host ""
 
