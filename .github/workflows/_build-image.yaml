@@ -146,8 +146,8 @@ jobs:
           echo "fdm_monster_version=$MONSTERPI_FDMMONSTER_VERSION" >> $GITHUB_OUTPUT
           echo "build_date=$(date +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_OUTPUT
 
+      # Upload artifacts for diagnostics (available for both release and non-release builds)
       - name: Upload build log artifact
-        if: ${{ !inputs.create_release }}
         continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
@@ -168,8 +168,8 @@ jobs:
           echo "File size of ${{ steps.copy.outputs.image }}.zip"
           stat --printf="%s" ${{ steps.copy.outputs.image }}.zip
 
+      # Upload artifact for diagnostics (available for both release and non-release builds)
       - name: Upload zip artifact
-        if: ${{ !inputs.create_release }}
         uses: actions/upload-artifact@v4
         with:
           name: build-artifacts-zip
@@ -181,7 +181,7 @@ jobs:
           ZIP_URL="https://github.com/${{ github.repository }}/releases/download/${{ steps.copy.outputs.tag }}/${{ steps.copy.outputs.image }}.zip"
           OUTPUT_JSON="repository/src/workspace/monsterpi-rpi-imager.json"
 
-          python3 .github/scripts/generate-rpi-imager-json.py \
+          python3 repository/.github/scripts/generate-rpi-imager-json.py \
             --workspace repository/src/workspace \
             --image-url "$ZIP_URL" \
             --dist-version "${{ steps.copy.outputs.dist_version }}" \
@@ -192,6 +192,7 @@ jobs:
           echo "==================================="
           cat "$OUTPUT_JSON"
 
+      # Upload artifact for diagnostics (available for both release and non-release builds)
       - name: Upload Raspberry Pi Imager JSON artifact
         uses: actions/upload-artifact@v4
         with:
