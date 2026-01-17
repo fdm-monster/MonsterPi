@@ -180,31 +180,29 @@ jobs:
         run: |
           ZIP_URL="https://github.com/${{ github.repository }}/releases/download/${{ steps.copy.outputs.tag }}/${{ steps.copy.outputs.image }}.zip"
           ZIP_PATH="${{ steps.copy.outputs.image }}.zip"
-          OUTPUT_JSON="repository/src/workspace/monsterpi-rpi-imager.json"
+          IMG_PATH="${{ steps.copy.outputs.image }}.img"
+          OUTPUT_JSON="monsterpi-rpi-imager.json"
 
-          # Find the .img.sha256 file recursively
-          SHA256_PATH=$(find repository/src/workspace -name "*.img.sha256" -type f | head -n 1)
+          # Check for existing .img.sha256 file
+          if [ -f "${IMG_PATH}.sha256" ]; then
+            SHA256_PATH="${IMG_PATH}.sha256"
+            echo "Found existing SHA256 file: $SHA256_PATH"
+          else
+            echo "No .img.sha256 file found, generating it..."
 
-          if [ -z "$SHA256_PATH" ]; then
-            echo "Warning: No .img.sha256 file found, generating it..."
-
-            # Find the .img file
-            IMG_PATH=$(find repository/src/workspace -name "*.img" -type f | head -n 1)
-
-            if [ -z "$IMG_PATH" ]; then
-              echo "Error: No .img file found in repository/src/workspace"
+            # Verify img file exists
+            if [ ! -f "$IMG_PATH" ]; then
+              echo "Error: IMG file not found at $IMG_PATH"
               exit 1
             fi
 
             echo "Found IMG file: $IMG_PATH"
 
-            # Generate SHA256 file
+            # Generate SHA256 file in current directory
             SHA256_PATH="${IMG_PATH}.sha256"
             sha256sum "$IMG_PATH" > "$SHA256_PATH"
 
             echo "Generated SHA256 file: $SHA256_PATH"
-          else
-            echo "Found existing SHA256 file: $SHA256_PATH"
           fi
 
           python3 repository/.github/scripts/generate-rpi-imager-json.py \
@@ -224,7 +222,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: build-artifacts-rpi-imager-json
-          path: repository/src/workspace/monsterpi-rpi-imager.json
+          path: monsterpi-rpi-imager.json
           retention-days: 90
 
       - name: Generate release notes
@@ -243,6 +241,16 @@ jobs:
           echo "**FDM Monster Version:** ${{ steps.copy.outputs.fdm_monster_version }}" >> release-notes.md
           echo "**Image Version:** ${{ steps.copy.outputs.dist_version }}" >> release-notes.md
           echo "" >> release-notes.md
+
+          # Add SHA256 checksum if file exists
+          if [ -f "${{ steps.copy.outputs.image }}.img.sha256" ]; then
+            echo "**SHA256 Checksum:**" >> release-notes.md
+            echo '```' >> release-notes.md
+            cat "${{ steps.copy.outputs.image }}.img.sha256" >> release-notes.md
+            echo '```' >> release-notes.md
+            echo "" >> release-notes.md
+          fi
+
           echo "${{ inputs.release_notes_suffix }}" >> release-notes.md
           echo "" >> release-notes.md
           echo "---" >> release-notes.md
@@ -284,5 +292,6 @@ jobs:
         run: |
           gh release upload "${{ steps.copy.outputs.tag }}" \
             "${{ steps.copy.outputs.image }}.zip#${{ steps.copy.outputs.image }}.zip" \
+            "${{ steps.copy.outputs.image }}.img.sha256#${{ steps.copy.outputs.image }}.img.sha256" \
             "${{ steps.copy.outputs.image }}-build.log#${{ steps.copy.outputs.image }}-build.log" \
-            "repository/src/workspace/monsterpi-rpi-imager.json#monsterpi-rpi-imager.json"
+            "monsterpi-rpi-imager.json#monsterpi-rpi-imager.json"
