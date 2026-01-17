@@ -1,23 +1,25 @@
-<div style="display: inline">
-  <img src="assets/logo-copyright.png" width="150" /> <strong>+</strong> <img src="assets/CustomPiOS.png" style="margin-left: 15px" width="200" />
-    = <strong>MonsterPi !</strong>
-</div>
+<img src="assets/logo-copyright.png" width="150" /> <br/> 
+_FDM Monster Raspberry Pi Image_
+<br/>
+<br/>
+<img src="assets/CustomPiOS.png" width="100" />
+<br/>
+_Using CustomPiOS_
 
 # MonsterPi
 
 This repository is a Raspberry Pi image builder for running [FDM Monster](https://github.com/fdm-monster/fdm-monster).
-The work is a culmination of [CustomPiOS](https://github.com/guysoft/CustomPiOS) by G. Sheffer, [FarmPi](https://github.com/mkevenaar/FarmPi) by M. Kevenaar and my own private 4xOctoPrint Pi OS image.
 
 - Please check out [FDM Monster's repository](https://github.com/fdm-monster/fdm-monster)
 - Please check out [MonsterPi's documentation](https://docs.fdm-monster.net/docs/installing/monsterpi) to get started
-- Please consider donation to the project or its individual contributors if you like this project!
+- Please consider [supporting](https://github.com/sponsors/fdm-monster) the project or its individual contributors if it helps you!
 
 <!--ts-->
 <!--te-->
 
 ## How to use it?
 
-> :warning: This image is not running [Raspberry Pi OS](https://www.raspberrypi.org/software/), therefore `raspi-config` is not available
+> ℹ️ This image is running [Raspberry Pi OS 64-bits Lite](https://www.raspberrypi.org/software/)!
 
 Read the [MonsterPi](https://docs.fdm-monster.net/docs/installing/monsterpi) documentation on our documentation website
 
@@ -52,6 +54,12 @@ These are the people involved in the project:
 <!-- markdownlint-restore -->
 <!-- prettier-ignore-end -->
 
-<table></table>
+## Historical Note
+
+The work is a culmination of:
+- [CustomPiOS](https://github.com/guysoft/CustomPiOS) by G. Sheffer
+- [FarmPi](https://github.com/mkevenaar/FarmPi) by M. Kevenaar 
+- davidzwa's private 4xOctoPrint Pi OS image.
+
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
