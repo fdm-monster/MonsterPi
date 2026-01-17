@@ -289,6 +289,7 @@ jobs:
 
           gh release create "$TAG" \
             --repo "${{ github.repository }}" \
+            --target "${{ github.sha }}" \
             --title "MonsterPi $TAG" \
             --notes-file release-notes.md \
             $PRERELEASE_FLAG

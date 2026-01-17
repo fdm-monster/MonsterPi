@@ -1,0 +1,13 @@
+mode: ContinuousDelivery
+branches:
+  release:
+    regex: ^release?[/-](?<BranchName>.+)
+    mode: ContinuousDelivery
+    label: ''
+    increment: None
+    source-branches: ['main']
+  main:
+    regex: ^main$
+    mode: ContinuousDelivery
+    label: ''
+    increment: Patch
