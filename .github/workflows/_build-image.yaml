@@ -267,6 +267,20 @@ jobs:
           echo "**FDM Monster Version:** ${{ steps.copy.outputs.fdm_monster_version }}" >> release-notes.md
           echo "**Image Version:** ${{ steps.copy.outputs.dist_version }}" >> release-notes.md
           echo "" >> release-notes.md
+          echo "**Raspberry Pi Imager v2 - Custom OS:**" >> release-notes.md
+          echo "" >> release-notes.md
+          echo "To use MonsterPi directly in Raspberry Pi Imager:" >> release-notes.md
+          echo "1. Open Raspberry Pi Imager" >> release-notes.md
+          echo "2. Click **App Options** in the bottom right" >> release-notes.md
+          echo "3. Go to **Content Repository** and click **EDIT**" >> release-notes.md
+          echo "4. Select **Use custom URL** and paste the following URL (ending with .json):" >> release-notes.md
+          echo "" >> release-notes.md
+          echo '```' >> release-notes.md
+          echo "https://github.com/${{ github.repository }}/releases/download/${{ steps.copy.outputs.tag }}/${{ steps.generate_json.outputs.json_filename }}" >> release-notes.md
+          echo '```' >> release-notes.md
+          echo "" >> release-notes.md
+          echo "_Alternatively, select **Use custom file**, [download the JSON file](https://github.com/${{ github.repository }}/releases/download/${{ steps.copy.outputs.tag }}/${{ steps.generate_json.outputs.json_filename }}), and select it._" >> release-notes.md
+          echo "" >> release-notes.md
           echo "📥 [Download image here](https://github.com/${{ github.repository }}/releases/download/${{ steps.copy.outputs.tag }}/${{ steps.copy.outputs.image }}.zip)" >> release-notes.md
           echo "" >> release-notes.md
 
