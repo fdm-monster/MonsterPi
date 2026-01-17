@@ -1,0 +1,167 @@
+---
+
+name: Update FDM Monster Version
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Run every 4 hours
+    - cron: '0 */4 * * *'
+
+jobs:
+  check-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6.0.1
+
+      - name: Validate config file exists
+        run: |
+          CONFIG_FILE="src/modules/monsterpi/config"
+          if [ ! -f "$CONFIG_FILE" ]; then
+            echo "Error: Config file not found at $CONFIG_FILE"
+            exit 1
+          fi
+          echo "Config file found at $CONFIG_FILE"
+
+      - name: Get current FDM Monster version
+        id: current_version
+        run: |
+          CONFIG_FILE="src/modules/monsterpi/config"
+
+          # Extract current version
+          CURRENT_VERSION=$(grep "MONSTERPI_FDMMONSTER_VERSION=" "$CONFIG_FILE" | sed 's/.*MONSTERPI_FDMMONSTER_VERSION=//' | tr -d ' ')
+
+          if [ -z "$CURRENT_VERSION" ]; then
+            echo "Error: Could not extract MONSTERPI_FDMMONSTER_VERSION from config"
+            exit 1
+          fi
+
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "Current FDM Monster version: $CURRENT_VERSION"
+
+      - name: Get latest FDM Monster release
+        id: latest_release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Get latest stable release (not prerelease) from fdm-monster/fdm-monster
+          LATEST_VERSION=$(gh api repos/fdm-monster/fdm-monster/releases \
+            --jq '[.[] | select(.prerelease == false and .draft == false)] | first | .tag_name' \
+            | sed 's/^v//')
+
+          if [ -z "$LATEST_VERSION" ]; then
+            echo "Error: Could not fetch latest stable release from fdm-monster/fdm-monster"
+            exit 1
+          fi
+
+          echo "latest_version=$LATEST_VERSION" >> $GITHUB_OUTPUT
+          echo "Latest FDM Monster stable release: $LATEST_VERSION"
+
+      - name: Compare versions
+        id: compare
+        run: |
+          CURRENT="${{ steps.current_version.outputs.current_version }}"
+          LATEST="${{ steps.latest_release.outputs.latest_version }}"
+
+          echo "Comparing versions:"
+          echo "  Current: $CURRENT"
+          echo "  Latest:  $LATEST"
+
+          if [ "$CURRENT" = "$LATEST" ]; then
+            echo "Versions are equal. No update needed."
+            echo "needs_update=false" >> $GITHUB_OUTPUT
+          else
+            echo "New version available!"
+            echo "needs_update=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check if PR already exists
+        if: steps.compare.outputs.needs_update == 'true'
+        id: check_pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          BRANCH_NAME="chore/update-fdm-monster-${{ steps.latest_release.outputs.latest_version }}"
+
+          # Check if PR already exists for this branch
+          PR_EXISTS=$(gh pr list --head "$BRANCH_NAME" --json number --jq 'length')
+
+          if [ "$PR_EXISTS" -gt 0 ]; then
+            echo "PR already exists for branch $BRANCH_NAME"
+            echo "pr_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "No existing PR found"
+            echo "pr_exists=false" >> $GITHUB_OUTPUT
+          fi
+
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+
+      - name: Create update branch and PR
+        if: steps.compare.outputs.needs_update == 'true' && steps.check_pr.outputs.pr_exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          LATEST_VERSION="${{ steps.latest_release.outputs.latest_version }}"
+          BRANCH_NAME="${{ steps.check_pr.outputs.branch_name }}"
+          CONFIG_FILE="src/modules/monsterpi/config"
+
+          # Configure git
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Create and checkout branch (force create/reset if exists)
+          git checkout -B "$BRANCH_NAME"
+
+          # Update the version in config file
+          sed -i "s/MONSTERPI_FDMMONSTER_VERSION=.*/MONSTERPI_FDMMONSTER_VERSION=$LATEST_VERSION/" "$CONFIG_FILE"
+
+          # Verify the change was made
+          if ! grep -q "MONSTERPI_FDMMONSTER_VERSION=$LATEST_VERSION" "$CONFIG_FILE"; then
+            echo "Error: Failed to update version in config file"
+            exit 1
+          fi
+
+          echo "Updated MONSTERPI_FDMMONSTER_VERSION to $LATEST_VERSION"
+
+          # Commit changes
+          git add "$CONFIG_FILE"
+          git commit -m "chore: update FDM Monster to v$LATEST_VERSION"
+
+          # Push branch
+          git push origin "$BRANCH_NAME"
+
+          # Create PR
+          gh pr create \
+            --title "chore: update FDM Monster to v$LATEST_VERSION" \
+            --body "This PR updates FDM Monster from v${{ steps.current_version.outputs.current_version }} to v$LATEST_VERSION.
+
+          **Changes:**
+          - Updated \`MONSTERPI_FDMMONSTER_VERSION\` in \`src/modules/monsterpi/config\`
+
+          **Release Notes:** https://github.com/fdm-monster/fdm-monster/releases/tag/v$LATEST_VERSION
+
+          This PR was automatically created by the Update FDM Monster workflow." \
+            --label "dependencies" \
+            --label "automated"
+
+          echo "Created PR for FDM Monster update to v$LATEST_VERSION"
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "### Update Check Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Current Version:** ${{ steps.current_version.outputs.current_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Latest Version:** ${{ steps.latest_release.outputs.latest_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Update Needed:** ${{ steps.compare.outputs.needs_update }}" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.compare.outputs.needs_update }}" = "true" ]; then
+            if [ "${{ steps.check_pr.outputs.pr_exists }}" = "true" ]; then
+              echo "- **Status:** PR already exists" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "- **Status:** PR created successfully" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "- **Status:** No update needed" >> $GITHUB_STEP_SUMMARY
+          fi

@@ -2,7 +2,6 @@
 
 name: Build Image
 on:
-  workflow_dispatch:
   pull_request:
   push:
     branches:
@@ -11,76 +10,13 @@ on:
     paths:
       - 'src/*'
       - '.github/workflows/build.yaml'
-  schedule:
-    - cron: '0 0 * * *'
 
 jobs:
   build:
-    runs-on: ubuntu-24.04-arm
-    steps:
-    - name: Install Dependencies
-      run: |
-        sudo apt update
-        sudo apt install coreutils p7zip-full qemu-user-static python3-git
-
-    - name: Checkout CustomPiOS
-      uses: actions/checkout@v6.0.1
-      with:
-        repository: 'guysoft/CustomPiOS'
-        path: CustomPiOS
-        ref: "79b77a4c1a34ef551ab09e9bd84710d048b65e55"
-
-    - name: Checkout Project Repository
-      uses: actions/checkout@v6.0.1
-      with:
-        path: repository
-        submodules: true
-
-    - name: Download RaspberryPiOS Image
-      run: |
-        cd repository/src/image-raspberrypiarm64
-        wget -c --trust-server-names 'https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2025-12-04/2025-12-04-raspios-trixie-arm64-lite.img.xz'
-
-    - name: Update CustomPiOS Paths
-      run: |
-        cd repository/src
-        ../../CustomPiOS/src/update-custompios-paths
-
-    - name: Set nightly image version
-      if: github.event_name == 'schedule'
-      run: |
-        source repository/src/config
-        NOW=$(date +"%Y-%m-%d")
-        echo "DIST_VERSION=$DIST_VERSION-$NOW-nightly" > repository/src/config.local
-
-    - name: Build Image
-      run: |
-        sudo modprobe loop
-        cd repository/src
-        sudo bash -x ./build_dist
-
-    - name: Copy output
-      id: copy
-      run: |
-        source repository/src/config
-        NOW=$(date +"%Y-%m-%d")
-        TAG=${DIST_VERSION}-${NOW}-nightly
-        IMAGE=monsterpi-$TAG
-
-        cp repository/src/workspace/*.img $IMAGE.img
-
-        echo "tag=$TAG" >> $GITHUB_OUTPUT
-        echo "image=$IMAGE" >> $GITHUB_OUTPUT
-
-    - name: Show size and tag
-      run: |
-        echo "Tag ${{steps.copy.outputs.tag}}"
-        echo "File size of ${{ steps.copy.outputs.image }}.img"
-        stat --printf="%s" ${{ steps.copy.outputs.image }}.img
-
-    - name: Zip Image
-      if: github.event_name == 'schedule'
-      run: |
-        zip ${{ steps.copy.outputs.image }}.zip ${{ steps.copy.outputs.image }}.img
-        echo "File size of ${{ steps.copy.outputs.image }}.zip"
-        stat --printf="%s" ${{ steps.copy.outputs.image }}.zip
+    uses: ./.github/workflows/_build-image.yaml
+    with:
+      version_strategy: 'build'
+      create_release: false
+      fetch_depth: 0
+      # Just for previewing the release notes.
+      release_notes_suffix: 'This is a build run (not released).'

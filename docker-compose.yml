@@ -1,6 +1,6 @@
 services:
-  # custompios_prep:
-    # image: guysoft/custompios:devel
+  # CustomPiOS_prep:
+    # image: ghcr.io/guysoft/custompios:devel
     # container_name: ${DISTRO_NAME}-build
     # tty: true
     # restart: always
@@ -10,8 +10,8 @@ services:
     # devices:
     #   - /dev/loop-control
 
-  custompios:
-    image: guysoft/custompios:devel
+  CustomPiOS:
+    image: ghcr.io/guysoft/custompios:devel
     container_name: MonsterPi-image
     tty: true
     restart: always

@@ -2,108 +2,24 @@
 
 name: Release
 on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag (optional override)'
+        required: false
+        type: string
   push:
     branches:
       - 'release/*'
 
 jobs:
   release:
-    if: startsWith(github.ref, 'refs/heads/release')
-    runs-on: ubuntu-24.04-arm
-    steps:
-    - name: Install Dependencies
-      run: |
-        sudo apt update
-        sudo apt install coreutils p7zip-full qemu-user-static python3-git
-
-    - name: Checkout CustomPiOS
-      uses: actions/checkout@v6.0.1
-      with:
-        repository: 'guysoft/CustomPiOS'
-        path: CustomPiOS
-        ref: "79b77a4c1a34ef551ab09e9bd84710d048b65e55"
-
-    - name: Checkout Project Repository
-      uses: actions/checkout@v6.0.1
-      with:
-        path: repository
-        submodules: true
-        fetch-depth: 0
-
-    - name: Install GitVersion
-      uses: gittools/actions/gitversion/setup@v4.2.0
-      with:
-        versionSpec: '6.x'
-
-    - name: Use GitVersion
-      uses: gittools/actions/gitversion/execute@v4.2.0
-      id: gitversion
-      with:
-        targetPath: repository
-
-    - name: Download RaspberryPiOS Image
-      run: |
-        cd repository/src/image-raspberrypiarm64
-        wget -c --trust-server-names 'https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2025-12-04/2025-12-04-raspios-trixie-arm64-lite.img.xz'
-
-    - name: Update CustomPiOS Paths
-      run: |
-        cd repository/src
-        ../../CustomPiOS/src/update-custompios-paths
-
-    - name: Set release image version
-      run: |
-        source repository/src/config
-        echo "DIST_VERSION=${{ steps.gitversion.outputs.majorMinorPatch }}" > repository/src/config.local
-
-    - name: Build Image
-      run: |
-        sudo modprobe loop
-        cd repository/src
-        sudo bash -x ./build_dist
-
-    - name: Copy output
-      id: copy
-      run: |
-        source repository/src/config
-        TAG=${DIST_VERSION}
-        IMAGE=monsterpi-$TAG
-
-        cp repository/src/workspace/*.img $IMAGE.img
-
-        echo "tag=$TAG" >> $GITHUB_OUTPUT
-        echo "image=$IMAGE" >> $GITHUB_OUTPUT
-
-    - name: Show size and version info
-      run: |
-        echo "Tag ${{steps.copy.outputs.tag}}"
-        echo "File size of ${{ steps.copy.outputs.image }}.img"
-        stat --printf="%s" ${{ steps.copy.outputs.image }}.img
-
-    - name: Zip Image
-      run: |
-        zip ${{ steps.copy.outputs.image }}.zip ${{ steps.copy.outputs.image }}.img
-        echo "File size of ${{ steps.copy.outputs.image }}.zip"
-        stat --printf="%s" ${{ steps.copy.outputs.image }}.zip
-
-    - name: Create release
-      uses: actions/create-release@v1
-      id: create_release
-      with:
-        draft: false
-        prerelease: ${{ contains(steps.copy.outputs.tag, 'rc') || contains(steps.copy.outputs.tag, 'unstable') }}
-        tag_name: ${{ steps.copy.outputs.tag }}
-        release_name: MonsterPi ${{ steps.copy.outputs.image }}
-        body: "The MonsterPi image for running FDM Monster on Raspberry Pi. Release notes will be added manually." # ${{ steps.build_changelog.outputs.changelog }}
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-
-    - name: Upload server bundle zip
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ steps.copy.outputs.image }}.zip
-        asset_name: ${{ steps.copy.outputs.image }}.zip
-        asset_content_type: application/zip
+    if: always()
+    uses: ./.github/workflows/_build-image.yaml
+    with:
+      version_strategy: 'release'
+      create_release: true
+      fetch_depth: 0
+      image_version_override: ${{ inputs.release_tag || '' }}
+      github_release_tag: ${{ inputs.release_tag || '' }}
+      release_notes_suffix: ${{ github.event_name == 'workflow_dispatch' && 'This build was triggered manually via workflow dispatch.' || 'This build is an official MonsterPi release.' }}

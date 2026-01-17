@@ -1,0 +1,304 @@
+---
+
+name: Build Image (Reusable)
+on:
+  workflow_call:
+    inputs:
+      version_strategy:
+        description: 'Version strategy: nightly or release'
+        required: true
+        type: string
+      create_release:
+        description: 'Create GitHub release'
+        required: false
+        type: boolean
+        default: false
+      fetch_depth:
+        description: 'Git fetch depth'
+        required: false
+        type: number
+        default: 1
+      image_version_override:
+        description: 'Override DIST_VERSION and image tag (e.g., "1.0.0-2026-01-17-nightly")'
+        required: false
+        type: string
+        default: ''
+      github_release_tag:
+        description: 'GitHub release tag (can differ from image version, e.g., "nightly")'
+        required: false
+        type: string
+        default: ''
+      release_notes_suffix:
+        description: 'Additional text to append to release notes'
+        required: false
+        type: string
+        default: ''
+    outputs:
+      tag:
+        description: 'Image tag'
+        value: ${{ jobs.build.outputs.tag }}
+      dist_version:
+        description: 'Distribution version'
+        value: ${{ jobs.build.outputs.dist_version }}
+      image:
+        description: 'Image name'
+        value: ${{ jobs.build.outputs.image }}
+      fdm_monster_version:
+        description: 'FDM Monster version'
+        value: ${{ jobs.build.outputs.fdm_monster_version }}
+      build_date:
+        description: 'Build date'
+        value: ${{ jobs.build.outputs.build_date }}
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04-arm
+    outputs:
+      tag: ${{ steps.copy.outputs.tag }}
+      dist_version: ${{ steps.copy.outputs.dist_version }}
+      image: ${{ steps.copy.outputs.image }}
+      fdm_monster_version: ${{ steps.copy.outputs.fdm_monster_version }}
+      build_date: ${{ steps.copy.outputs.build_date }}
+    steps:
+      - name: Install Dependencies
+        run: |
+          sudo apt update
+          sudo apt install coreutils p7zip-full qemu-user-static python3-git
+
+      - name: Checkout CustomPiOS
+        uses: actions/checkout@v6.0.1
+        with:
+          repository: 'guysoft/CustomPiOS'
+          path: CustomPiOS
+          ref: "79b77a4c1a34ef551ab09e9bd84710d048b65e55"
+
+      - name: Checkout Project Repository
+        uses: actions/checkout@v6.0.1
+        with:
+          path: repository
+          submodules: true
+          fetch-depth: ${{ inputs.fetch_depth }}
+
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v4.2.0
+        with:
+          versionSpec: '6.x'
+
+      - name: Use GitVersion
+        uses: gittools/actions/gitversion/execute@v4.2.0
+        id: gitversion
+        with:
+          targetPath: repository
+
+      - name: Download RaspberryPiOS Image
+        run: |
+          cd repository/src/image-raspberrypiarm64
+          wget -c --trust-server-names 'https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2025-12-04/2025-12-04-raspios-trixie-arm64-lite.img.xz'
+
+      - name: Update CustomPiOS Paths
+        run: |
+          cd repository/src
+          ../../CustomPiOS/src/update-custompios-paths
+
+      - name: Set image version
+        run: |
+          if [ -n "${{ inputs.image_version_override }}" ]; then
+            echo "DIST_VERSION=${{ inputs.image_version_override }}" > repository/src/config.local
+          elif [ "${{ inputs.version_strategy }}" == "release" ]; then
+            echo "DIST_VERSION=${{ steps.gitversion.outputs.majorMinorPatch }}" > repository/src/config.local
+          else
+            NOW=$(date +"%Y-%m-%d")
+            echo "DIST_VERSION=${{ steps.gitversion.outputs.majorMinorPatch }}-$NOW-${{ inputs.version_strategy }}" > repository/src/config.local
+          fi
+
+      - name: Build Image
+        run: |
+          sudo modprobe loop
+          cd repository/src
+          sudo bash -x ./build_dist
+
+      - name: Copy output
+        id: copy
+        run: |
+          source repository/src/modules/monsterpi/config
+          source repository/src/config
+          source repository/src/config.local
+
+          # TAG is not always equal to DIST_VERSION (f.e. nightly tag)
+          if [ -n "${{ inputs.github_release_tag }}" ]; then
+            TAG="${{ inputs.github_release_tag }}"
+          else
+            TAG="$DIST_VERSION"
+          fi
+
+          IMAGE=monsterpi-${DIST_VERSION}
+
+          cp repository/src/workspace/*.img $IMAGE.img
+
+          # Copy build log
+          if [ -f repository/src/build.log ]; then
+            cp repository/src/build.log $IMAGE-build.log
+          fi
+
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "dist_version=$DIST_VERSION" >> $GITHUB_OUTPUT
+          echo "image=$IMAGE" >> $GITHUB_OUTPUT
+          echo "fdm_monster_version=$MONSTERPI_FDMMONSTER_VERSION" >> $GITHUB_OUTPUT
+          echo "build_date=$(date +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_OUTPUT
+
+      # Upload artifacts for diagnostics (available for both release and non-release builds)
+      - name: Upload build log artifact
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts-log
+          path: ${{ steps.copy.outputs.image }}-build.log
+          retention-days: 90
+
+      - name: Show size and tag
+        run: |
+          echo "Tag ${{steps.copy.outputs.tag}}"
+          echo "Dist version ${{steps.copy.outputs.dist_version}}"
+          echo "File size of ${{ steps.copy.outputs.image }}.img"
+          stat --printf="%s" ${{ steps.copy.outputs.image }}.img
+
+      - name: Zip Image
+        run: |
+          zip ${{ steps.copy.outputs.image }}.zip ${{ steps.copy.outputs.image }}.img
+          echo "File size of ${{ steps.copy.outputs.image }}.zip"
+          stat --printf="%s" ${{ steps.copy.outputs.image }}.zip
+
+      # Upload artifact for diagnostics (available for both release and non-release builds)
+      - name: Upload zip artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts-zip
+          path: ${{ steps.copy.outputs.image }}.zip
+          retention-days: 90
+
+      - name: Generate Raspberry Pi Imager JSON
+        run: |
+          ZIP_URL="https://github.com/${{ github.repository }}/releases/download/${{ steps.copy.outputs.tag }}/${{ steps.copy.outputs.image }}.zip"
+          ZIP_PATH="${{ steps.copy.outputs.image }}.zip"
+          IMG_PATH="${{ steps.copy.outputs.image }}.img"
+          OUTPUT_JSON="monsterpi-rpi-imager.json"
+
+          # Check for existing .img.sha256 file
+          if [ -f "${IMG_PATH}.sha256" ]; then
+            SHA256_PATH="${IMG_PATH}.sha256"
+            echo "Found existing SHA256 file: $SHA256_PATH"
+          else
+            echo "No .img.sha256 file found, generating it..."
+
+            # Verify img file exists
+            if [ ! -f "$IMG_PATH" ]; then
+              echo "Error: IMG file not found at $IMG_PATH"
+              exit 1
+            fi
+
+            echo "Found IMG file: $IMG_PATH"
+
+            # Generate SHA256 file in current directory
+            SHA256_PATH="${IMG_PATH}.sha256"
+            sha256sum "$IMG_PATH" > "$SHA256_PATH"
+
+            echo "Generated SHA256 file: $SHA256_PATH"
+          fi
+
+          python3 repository/.github/scripts/generate-rpi-imager-json.py \
+            --zip-path "$ZIP_PATH" \
+            --sha256-path "$SHA256_PATH" \
+            --image-url "$ZIP_URL" \
+            --dist-version "${{ steps.copy.outputs.dist_version }}" \
+            --output "$OUTPUT_JSON"
+
+          echo ""
+          echo "Generated Raspberry Pi Imager JSON:"
+          echo "==================================="
+          cat "$OUTPUT_JSON"
+
+      # Upload artifact for diagnostics (available for both release and non-release builds)
+      - name: Upload Raspberry Pi Imager JSON artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts-rpi-imager-json
+          path: monsterpi-rpi-imager.json
+          retention-days: 90
+
+      - name: Upload SHA256 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts-sha256
+          path: ${{ steps.copy.outputs.image }}.img.sha256
+          retention-days: 90
+
+      - name: Generate release notes
+        id: release_notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          AUTO_NOTES=$(gh api repos/${{ github.repository }}/releases/generate-notes \
+            -f tag_name="${{ steps.copy.outputs.tag }}" \
+            -f target_commitish="${{ github.sha }}" \
+            --jq '.body' || echo "")
+
+          echo "The MonsterPi image for running FDM Monster on Raspberry Pi." > release-notes.md
+          echo "" >> release-notes.md
+          echo "**Build Date:** ${{ steps.copy.outputs.build_date }}" >> release-notes.md
+          echo "**FDM Monster Version:** ${{ steps.copy.outputs.fdm_monster_version }}" >> release-notes.md
+          echo "**Image Version:** ${{ steps.copy.outputs.dist_version }}" >> release-notes.md
+          echo "" >> release-notes.md
+
+          # Add SHA256 checksum if file exists
+          if [ -f "${{ steps.copy.outputs.image }}.img.sha256" ]; then
+            echo "**SHA256 Checksum:**" >> release-notes.md
+            echo '```' >> release-notes.md
+            cat "${{ steps.copy.outputs.image }}.img.sha256" >> release-notes.md
+            echo '```' >> release-notes.md
+            echo "" >> release-notes.md
+          fi
+
+          echo "${{ inputs.release_notes_suffix }}" >> release-notes.md
+          echo "" >> release-notes.md
+          echo "---" >> release-notes.md
+          echo "" >> release-notes.md
+
+          if [ -n "$AUTO_NOTES" ]; then
+            echo "$AUTO_NOTES" >> release-notes.md
+          fi
+
+      - name: Show generated release notes
+        run: |
+          echo "Generated Release Notes:"
+          echo "========================"
+          cat release-notes.md
+
+      - name: Create release
+        if: inputs.create_release
+        id: create_release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PRERELEASE_FLAG=""
+          TAG="${{ steps.copy.outputs.tag }}"
+
+          # Check if this should be a prerelease
+          if [[ "$TAG" == *"rc"* ]] || [[ "$TAG" == *"unstable"* ]] || [[ "$TAG" == *"nightly"* ]]; then
+            PRERELEASE_FLAG="--prerelease"
+          fi
+
+          gh release create "$TAG" \
+            --title "MonsterPi $TAG" \
+            --notes-file release-notes.md \
+            $PRERELEASE_FLAG
+
+      - name: Upload release assets
+        if: inputs.create_release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "${{ steps.copy.outputs.tag }}" \
+            "${{ steps.copy.outputs.image }}.zip#${{ steps.copy.outputs.image }}.zip" \
+            "${{ steps.copy.outputs.image }}.img.sha256#${{ steps.copy.outputs.image }}.img.sha256" \
+            "${{ steps.copy.outputs.image }}-build.log#${{ steps.copy.outputs.image }}-build.log" \
+            "monsterpi-rpi-imager.json#monsterpi-rpi-imager.json"

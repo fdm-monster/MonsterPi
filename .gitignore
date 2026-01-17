@@ -22,3 +22,5 @@ src/modules/monsterpi/filesystem/home/pi/fdm-monster-daemon/node_modules/
 src/modules/monsterpi/filesystem/home/pi/fdm-monster/dist-active/
 
 src/modules/monsterpi/filesystem/home/pi/fdm-monster/dist-zips/
+
+.claude/settings.local.json
