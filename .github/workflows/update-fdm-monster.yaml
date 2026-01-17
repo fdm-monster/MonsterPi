@@ -142,7 +142,6 @@ jobs:
           **Release Notes:** https://github.com/fdm-monster/fdm-monster/releases/tag/v$LATEST_VERSION
 
           This PR was automatically created by the Update FDM Monster workflow." \
-            --label "dependencies" \
             --label "automated"
 
           echo "Created PR for FDM Monster update to v$LATEST_VERSION"
