@@ -149,7 +149,7 @@ jobs:
       # Upload artifacts for diagnostics (available for both release and non-release builds)
       - name: Upload build log artifact
         continue-on-error: true
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: build-artifacts-log
           path: ${{ steps.copy.outputs.image }}-build.log
@@ -170,7 +170,7 @@ jobs:
 
       # Upload artifact for diagnostics (available for both release and non-release builds)
       - name: Upload zip artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: build-artifacts-zip
           path: ${{ steps.copy.outputs.image }}.zip
@@ -219,14 +219,14 @@ jobs:
 
       # Upload artifact for diagnostics (available for both release and non-release builds)
       - name: Upload Raspberry Pi Imager JSON artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: build-artifacts-rpi-imager-json
           path: monsterpi-rpi-imager.json
           retention-days: 90
 
       - name: Upload SHA256 artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: build-artifacts-sha256
           path: ${{ steps.copy.outputs.image }}.img.sha256
