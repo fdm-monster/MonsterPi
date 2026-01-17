@@ -36,5 +36,5 @@ jobs:
       version_strategy: 'nightly'
       create_release: true
       fetch_depth: 0
-      github_release_tag: ${{ env.NIGHTLY_TAG }}
+      github_release_tag: 'nightly'
       release_notes_suffix: '⚠️ This is an automated nightly build. Use at your own risk.'
