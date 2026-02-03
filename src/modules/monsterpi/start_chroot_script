@@ -65,6 +65,28 @@ sudo -u "${BASE_USER}" bash "${installer_path}" install-user
 echo "Installing FDM Monster ${fdmm_version} - Root-level components..."
 bash "${installer_path}" install-root
 
+# Verify that the systemd service was created with the correct user
+echo "Verifying systemd service configuration..."
+if [ ! -f /etc/systemd/system/fdm-monster.service ]; then
+    echo "ERROR: fdm-monster.service was not created by install-root"
+    exit 1
+fi
+
+# Check that User is set to BASE_USER and not root
+if grep -q "^User=root$" /etc/systemd/system/fdm-monster.service; then
+    echo "ERROR: fdm-monster.service is configured to run as root instead of ${BASE_USER}"
+    cat /etc/systemd/system/fdm-monster.service
+    exit 1
+fi
+
+if ! grep -q "^User=${BASE_USER}$" /etc/systemd/system/fdm-monster.service; then
+    echo "ERROR: fdm-monster.service does not have User=${BASE_USER} configured"
+    cat /etc/systemd/system/fdm-monster.service
+    exit 1
+fi
+
+echo "Service configuration verified: User=${BASE_USER}"
+
 # Clean up the installer script
 rm -f "${installer_path}"
 
