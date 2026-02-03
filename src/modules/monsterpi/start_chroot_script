@@ -52,6 +52,7 @@ export FDMM_HOME="${fdmm_home}"
 export FDMM_INSTALL_DIR="${fdmm_install_dir}"
 export FDMM_DATA_DIR="${fdmm_data_dir}"
 export FDMM_SERVER_PORT="${fdmm_server_port}"
+export FDMM_SERVICE_USER="${BASE_USER}"
 
 # Install FDM Monster using local installer script (provides nice CLI)
 # Split into two phases for chroot environment:
