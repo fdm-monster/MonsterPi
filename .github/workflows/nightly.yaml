@@ -25,7 +25,7 @@ jobs:
 
     - name: Delete nightly tag
       continue-on-error: true
-      run: git push --delete origin ${{ env.NIGHTLY_TAG }} || true
+      run: gh api --method DELETE repos/${{ github.repository }}/git/refs/tags/${{ env.NIGHTLY_TAG }} || true
       env:
         GITHUB_TOKEN: ${{ github.token }}
 
