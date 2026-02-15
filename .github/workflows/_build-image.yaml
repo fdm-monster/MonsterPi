@@ -286,7 +286,7 @@ jobs:
           echo "4. Select **Use custom URL**, copy and paste the following _latest_ URL (ending with .json):" >> release-notes.md
           echo "" >> release-notes.md
           echo '```' >> release-notes.md
-          echo "https://github.com/${{ github.repository }}/releases/download/latest/${{ steps.generate_json.outputs.json_filename }}" >> release-notes.md
+          echo "https://github.com/${{ github.repository }}/releases/latest/download/${{ steps.generate_json.outputs.json_filename }}" >> release-notes.md
           echo '```' >> release-notes.md
           echo "Or select this release specifically:" >> release-notes.md
           echo '```' >> release-notes.md
