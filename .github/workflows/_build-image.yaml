@@ -52,7 +52,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     outputs:
       tag: ${{ steps.copy.outputs.tag }}
       dist_version: ${{ steps.copy.outputs.dist_version }}
